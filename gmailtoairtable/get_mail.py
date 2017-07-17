@@ -7,7 +7,7 @@ from html2text import html2text
 
 def get_login():
     config = configparser.ConfigParser()
-    config.read("./login.conf")
+    config.read("../login.conf")
     # config.read("/etc/gmailtoairtable/login.conf")
 
     return (
