@@ -1,6 +1,9 @@
 import smtplib, time, imaplib, email
 import configparser
+import html2text
 
+# class EmailINeed():
+    # def __init__(headers, content):
 
 def get_login():
     config = configparser.ConfigParser()
@@ -15,21 +18,22 @@ def get_login():
 
 FROM_EMAIL, FROM_PWD, SMTP_SERVER, SMTP_PORT = get_login()
 
+def get_text(mess):
+    if mess.is_multipart():
+        return get_text(mess.get_payload(0))
+    else:
+        return mess.get_payload(None, True)
+
 def readmail():
     # try:
     mail = imaplib.IMAP4_SSL(SMTP_SERVER)
     mail.login(FROM_EMAIL, FROM_PWD)
-    mail.select('inbox')
+    mail.select('Inbox')
 
-    type, data = mail.search(None, 'ALL')
-    mail_ids = data[0]
+    typ, data = mail.search(None, 'UnSeen')
 
-    id_list = mail_ids.split()
-    first_email_id = int(id_list[0])
-    latest_email_id = int(id_list[-1])
-
-    for i in range(latest_email_id,first_email_id, -1):
-        typ, data = mail.fetch(str(i), '(RFC822)')
+    for num in data[0].split():
+        typ, data = mail.fetch(num, '(RFC822)')
 
         for response_part in data:
             if isinstance(response_part, tuple):
@@ -38,9 +42,14 @@ def readmail():
                 email_from = msg['from']
                 print('From: ' + email_from)
                 print('Subject: ' + email_subject)
-                print('To: ' + msg['to'] + '\n')
+                print('To: ' + msg['to'])
+                print(html2text.html2text(str(get_text(msg))))
+                print('')
+
+        mail.store(num, '+FLAGS', '\Seen')
 
     # except Exception as e:
     #     print(str(e))
+    mail.close()
 
 readmail()
