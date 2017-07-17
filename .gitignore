@@ -1,0 +1,12 @@
+# generally useful .gitignore
+
+# vim files
+*~
+*.un~
+*.sw*
+
+# backup files
+*.bak
+
+# my login info
+login.conf
