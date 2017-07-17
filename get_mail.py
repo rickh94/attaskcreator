@@ -1,6 +1,6 @@
 import smtplib, time, imaplib, email
 import configparser
-import html2text
+from html2text import html2text
 
 # class EmailINeed():
     # def __init__(headers, content):
@@ -8,6 +8,7 @@ import html2text
 def get_login():
     config = configparser.ConfigParser()
     config.read("./login.conf")
+    # config.read("/etc/gmailtoairtable/login.conf")
 
     return (
             config['login']['user'],
@@ -22,10 +23,10 @@ def get_text(mess):
     if mess.is_multipart():
         return get_text(mess.get_payload(0))
     else:
-        return mess.get_payload(None, True)
+        return mess.get_payload(None, True).decode('utf-8')
 
 def readmail():
-    # try:
+    mail_info = []
     mail = imaplib.IMAP4_SSL(SMTP_SERVER)
     mail.login(FROM_EMAIL, FROM_PWD)
     mail.select('Inbox')
@@ -36,20 +37,29 @@ def readmail():
         typ, data = mail.fetch(num, '(RFC822)')
 
         for response_part in data:
+            dict_of_data = {}
             if isinstance(response_part, tuple):
                 msg = email.message_from_bytes(response_part[1])
-                email_subject = msg['subject']
-                email_from = msg['from']
-                print('From: ' + email_from)
-                print('Subject: ' + email_subject)
-                print('To: ' + msg['to'])
-                print(html2text.html2text(str(get_text(msg))))
-                print('')
+                # for k, v in msg.items():
+                #     print(k, ':', v)
+                dict_of_data['from'] = msg['from']
+                dict_of_data['to'] = msg['to']
+                dict_of_data['subject'] = msg['subject']
+                dict_of_data['date'] = msg['date']
+                dict_of_data['body'] = html2text(get_text(msg))
+                mail_info.append(dict_of_data)
 
         mail.store(num, '+FLAGS', '\Seen')
 
-    # except Exception as e:
-    #     print(str(e))
     mail.close()
+    return mail_info
 
-readmail()
+def main():
+    some_email = readmail()
+    # debugging code
+    # for mess in some_email:
+    #     for k, v in mess.items():
+    #         print(k, ':', v)
+
+if __name__ == "__main__":
+    main()
