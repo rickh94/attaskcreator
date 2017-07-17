@@ -14,10 +14,10 @@
 * query airtable api (with http get request: curl or similar python)
   (caching?) to get copy of second table with the records to search.
 
-* search records for email addresses matching To retrieved from email. If no
-  record exists, create one from email header data. either way, return 'id'
-  field of record for linking. NOTE: write function for generating curl calls
-  early. 
+* search records (some code a scratch file) for email addresses matching To
+  retrieved from email. If no record exists, create one from email header
+  data. either way, return 'id' field of record for linking. NOTE: write
+  function for generating curl calls early.
 
 * assemble new record with parsed data into json notation
 
