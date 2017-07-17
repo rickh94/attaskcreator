@@ -18,6 +18,7 @@
   retrieved from email. If no record exists, create one from email header
   data. either way, return 'id' field of record for linking. NOTE: write
   function for generating curl calls early.
+  **check out requests library, possibly switch to that**
 
 * assemble new record with parsed data into json notation
 
