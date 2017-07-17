@@ -1,0 +1,21 @@
+import json
+import re
+
+# read in some json
+# save it in a dict
+
+curr_id = ''
+# iterate through the records
+for c in jdata['records']: 
+    # iterate through the contents of the record
+  for k, v in c.items():             
+      # if it's the id, get the id
+    if re.match('id', k, re.IGNORECASE):
+      curr_id = v
+      # iterate through the fields for searching
+    elif re.match('fields', k, re.IGNORECASE):
+      for h, j in v.items():
+        if 'NAMEOFFIELD' in h and re.match(search_for_this, j, re.IGNORECASE):
+          print(curr_id)
+
+# vim: se ft=python :
