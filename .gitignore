@@ -10,3 +10,6 @@
 
 # my login info
 login.conf
+
+# python cache
+__pycache__

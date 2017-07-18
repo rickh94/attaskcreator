@@ -107,7 +107,7 @@ def at_curl(action, table,):
     cmd.perform()
     cmd.close()
     stuff = buffer.getvalue()
-    #
+    # return 
     return stuff.decode('utf-8')
 
     
