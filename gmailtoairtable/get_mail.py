@@ -5,15 +5,16 @@ DEBUG = 1
 
 import smtplib, time, imaplib, email
 import configparser
-import subprocess
-import sys
-import pycurl
 import json
+import re
+from nameparser import HumanName
+from airtable import airtable
 from io import BytesIO
 from html2text import html2text
 
 if DEBUG == 1:
     import settings
+    from pprint import pprint
 else:
     from gmailtoairtable import settings
 
@@ -35,13 +36,16 @@ def get_settings():
     setattr(settings, 'eml_smtp_server', config['email']['imap_url'])
 
     # set airtable settings
-    setattr(settings, 'at_api_key', config['airtable']['api_key'])
-    setattr(settings, 'at_database_id', config['airtable']['database_id'])
+    at = airtable.Airtable(
+            config['airtable']['database_id'],
+            config['airtable']['api_key']
+            )
+    setattr(settings, 'database', at)
     setattr(settings, 'at_insert_table', \
-            config['airtable']['insert_table_name'].replace(' ', '%20'))
+            config['airtable']['insert_table_name'])
     setattr(settings, 'at_link_table', \
-            config['airtable']['link_table_name'].replace(' ', '%20'))
-
+            config['airtable']['link_table_name'])
+    setattr(settings, 'link_field', config['airtable']['link_field'])
 
 def get_text(mess):
     if mess.is_multipart():
@@ -77,51 +81,76 @@ def readmail():
     mail.close()
     return mail_info
 
-# generate curl calls to airtable
-def at_curl(action, table,):
-    # needed info for easy access
-    at_base_url = "https://api.airtable.com/v0/"
-    at_db = settings.at_database_id
-    at_api_key = settings.at_api_key
-    at_auth_cmd = "Authorization: Bearer " + at_api_key 
-    at_headers = [at_auth_cmd]
+def search_for_email(email_addr, fname, lname):
+    # get data
+    at = settings.database
+    table_name = settings.at_link_table
+    table = at.get(table_name)
+    # search for existing data
+    search_field = settings.link_field
+    curr_id = '' # for keeping track of the current record id
+    for rec in table['records']:
+        for k, v in rec.items():
+            if re.match('id', k, re.IGNORECASE):
+                curr_id = v
+            elif re.match('fields', k, re.IGNORECASE):
+                for h, j in v.items():
+                    if search_field in h and email_addr in j:
+                        # debug code
+                        # print(h, j)
+                        return(curr_id)
+    # create new record if none found
+    data = { 
+            "Email": email_addr,
+            "First Name": fname,
+            "Last Name": lname,
+            }
 
-    full_command = ['curl']
-    # set the correct table
-    if 'link' in table:
-        table = settings.at_link_table
-    elif 'insert' in table:
-        table = settings.at_insert_table
-    else:
-        print('No matching table found. Curl failed')
-        sys.exit(1)
+    at.create(table_name, data)
 
-    buffer = BytesIO()
-    cmd = pycurl.Curl()
-    if 'get' in action:
-        full_url = at_base_url + at_db + "/" + table 
+    # recursive call to return record id for created record
+    return search_for_email(email_addr, fname, lname)
 
-    cmd.setopt(cmd.URL, full_url)
-    cmd.setopt(cmd.HTTPHEADER, at_headers)
-    cmd.setopt(cmd.WRITEDATA, buffer)
-    cmd.perform()
-    cmd.close()
-    stuff = buffer.getvalue()
-    # return 
-    return stuff.decode('utf-8')
 
-    
+def parse_to_field(email_to_field):
+    # split name from email
+    searched = re.search(r'([^<]*)<([^>]*)>', email_to_field)
+    # store email
+    # parse name
+    try:
+        email = searched.group(2)
+        name = HumanName(searched.group(1))
+        fname = name.first
+        lname = name.last
+    # return attributes
+    except AttributeError:
+        email = email_to_field
+        fname = ''
+        lname = ''
+    return { 
+            'fname': fname,
+            'lname': lname,
+            'email': email,
+            }
+
 
 def main():
     get_settings()
     some_email = readmail()
     # debugging code
-    for mess in some_email:
-        for k, v in mess.items():
-            print(k, ':', v)
-    data = at_curl('get', 'insert')
-    parsed = json.loads(data)
-    print(json.dumps(parsed, indent=4, sort_keys=True))
+    # for mess in some_email:
+    #     for k, v in mess.items():
+    #         print(k, ':', v)
+    # print(search_for_email("testemail@test.tech", "test", "person"))
+    for email in some_email:
+        # print(email['to'])
+        to_info = parse_to_field(email['to'])
+        pprint(to_info)
+        print(search_for_email(to_info['email'], to_info['fname'], \
+                to_info['lname']))
+        print('')
+
+    # pprint(some_email)
 
 
 if __name__ == "__main__":

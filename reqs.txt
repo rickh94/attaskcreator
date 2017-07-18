@@ -1,0 +1,5 @@
+note to self about needed python modules
+requests
+airtable
+html2text
+nameparser
