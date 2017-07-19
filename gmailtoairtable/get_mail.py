@@ -93,16 +93,13 @@ def search_for_email(email_addr, fname, lname):
     # search for existing data
     search_field = settings.link_field
     curr_id = '' # for keeping track of the current record id
+    # print(table_name)
     for rec in table['records']:
         for k, v in rec.items():
-            if re.match('id', k, re.IGNORECASE):
-                curr_id = v
-            elif re.match('fields', k, re.IGNORECASE):
-                for h, j in v.items():
-                    if search_field in h and email_addr in j:
-                        # debug code
-                        # print(h, j)
-                        return(curr_id)
+            curr_id = rec['id']
+            if email_addr in rec['fields'][search_field]:
+                return(curr_id)
+
     # create new record if none found
     data = { 
             "Email": email_addr,
@@ -169,19 +166,23 @@ def main():
         rec_id = search_for_email(to_info['email'], to_info['fname'], \
                 to_info['lname'])
         # email_obj.store(mess['number'], '+FLAGS', '\Seen')
-        # parse_email_message(mess['body'])
+        parsed_text = parse_email_message(mess['body'])
+        if parsed_text:
+            print(parsed_text)
+        else:
+            print("No text")
         
         # debugging code
         # pprint(to_info)
         # print(rec_id)
 
     # debugging code
-    parsed_text = parse_email_message('this will fail')
+    # parsed_text = parse_email_message('this will fail')
     # parsed_text = parse_email_message('Can you please print this out?')
-    if parsed_text:
-        print(parsed_text)
-    else:
-        print("No text")
+    # if parsed_text:
+    #     print(parsed_text)
+    # else:
+    #     print("No text")
     # pprint(some_email)
     email_obj.close()
 
