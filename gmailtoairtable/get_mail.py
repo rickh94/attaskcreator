@@ -22,6 +22,11 @@ else:
 # class EmailINeed():
     # def __init__(headers, content):
 
+# idomatic attribute setting 
+def setattrs(_self, **kwargs):
+    for k,v in kwargs.items():
+        setattr(_self, k, v)
+
 def get_settings():
     config = configparser.ConfigParser()
     # development location for file
@@ -30,24 +35,23 @@ def get_settings():
     else:
         config.read("/etc/gmailtoairtable/login.conf")
 
-    # set email settings
-    setattr(settings, 'eml_username', config['email']['user'])
-    setattr(settings, 'eml_pwd', config['email']['password'])
-    setattr(settings, 'eml_smtp_server', config['email']['imap url'])
-
-    # set airtable settings
+    # make airtable object
     at = airtable.Airtable(
             config['airtable']['database id'],
             config['airtable']['api key']
             )
-    setattr(settings, 'database', at)
-    setattr(settings, 'at_insert_table', \
-            config['airtable']['insert table'])
-    setattr(settings, 'at_link_table', \
-            config['airtable']['link table'])
-    setattr(settings, 'link_field', config['airtable']['link field'])
-    setattr(settings, 'trigger_phrase', config['parse']['Trigger Phrase'])
-    setattr(settings, 'term_char', config['parse']['Termination Character'])
+
+    setattrs(settings, 
+            eml_username = config['email']['user'],
+            eml_pwd = config['email']['password'],
+            eml_smtp_server = config['email']['imap url'],
+            database = at,
+            at_insert_table = config['airtable']['insert table'],
+            at_link_table = config['airtable']['link table'],
+            link_field = config['airtable']['link field'],
+            trigger_phrase = config['parse']['Trigger Phrase'],
+            term_char = config['parse']['Termination Character']
+            )
     
 
 def get_text(mess):
