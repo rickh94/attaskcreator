@@ -46,6 +46,9 @@ def get_settings():
     setattr(settings, 'at_link_table', \
             config['airtable']['link_table_name'])
     setattr(settings, 'link_field', config['airtable']['link_field'])
+    setattr(settings, 'trigger_phrase', config['parse']['Trigger Phrase'])
+    setattr(settings, 'term_char', config['parse']['Termination Character'])
+    
 
 def get_text(mess):
     if mess.is_multipart():
@@ -133,6 +136,9 @@ def parse_to_field(email_to_field):
             'lname': lname,
             'email': email,
             }
+
+# def parse_email_message(text):
+
 
 
 def main():
