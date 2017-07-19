@@ -72,12 +72,14 @@ def readmail():
             if isinstance(response_part, tuple):
                 msg = email.message_from_bytes(response_part[1])
                 # store headers in dict
-                dict_of_data['from'] = msg['from']
-                dict_of_data['to'] = msg['to']
-                dict_of_data['subject'] = msg['subject']
-                dict_of_data['date'] = msg['date']
-                dict_of_data['body'] = html2text(get_text(msg))
-                dict_of_data['number'] = num
+                dict_of_data = {
+                        'from': msg['from'],
+                        'to': msg['to'],
+                        'subject': msg['subject'],
+                        'date': msg['date'],
+                        'body': html2text(get_text(msg)),
+                        'number': num,
+                        }
                 mail_info.append(dict_of_data)
 
         # mail.store(num, '+FLAGS', '\Seen')
