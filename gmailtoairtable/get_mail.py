@@ -74,12 +74,13 @@ def readmail():
                 dict_of_data['subject'] = msg['subject']
                 dict_of_data['date'] = msg['date']
                 dict_of_data['body'] = html2text(get_text(msg))
+                dict_of_data['number'] = num
                 mail_info.append(dict_of_data)
 
-        mail.store(num, '+FLAGS', '\Seen')
+        # mail.store(num, '+FLAGS', '\Seen')
 
-    mail.close()
-    return mail_info
+    # mail.close()
+    return mail_info, mail
 
 def search_for_email(email_addr, fname, lname):
     # get data
@@ -136,21 +137,28 @@ def parse_to_field(email_to_field):
 
 def main():
     get_settings()
-    some_email = readmail()
+    email_info, email_obj = readmail()
     # debugging code
-    # for mess in some_email:
+    # print(email)
+    # for mess in email_info:
     #     for k, v in mess.items():
     #         print(k, ':', v)
     # print(search_for_email("testemail@test.tech", "test", "person"))
-    for email in some_email:
+
+    # get record id for 
+    for mess in email_info:
+        # debugging code
         # print(email['to'])
-        to_info = parse_to_field(email['to'])
-        pprint(to_info)
-        print(search_for_email(to_info['email'], to_info['fname'], \
-                to_info['lname']))
-        print('')
+        to_info = parse_to_field(mess['to'])
+        rec_id = search_for_email(to_info['email'], to_info['fname'], \
+                to_info['lname'])
+        # email_obj.store(mess['number'], '+FLAGS', '\Seen')
+        # debugging code
+        # pprint(to_info)
+        # print(rec_id)
 
     # pprint(some_email)
+    email.close()
 
 
 if __name__ == "__main__":
