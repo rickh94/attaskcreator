@@ -33,19 +33,19 @@ def get_settings():
     # set email settings
     setattr(settings, 'eml_username', config['email']['user'])
     setattr(settings, 'eml_pwd', config['email']['password'])
-    setattr(settings, 'eml_smtp_server', config['email']['imap_url'])
+    setattr(settings, 'eml_smtp_server', config['email']['imap url'])
 
     # set airtable settings
     at = airtable.Airtable(
-            config['airtable']['database_id'],
-            config['airtable']['api_key']
+            config['airtable']['database id'],
+            config['airtable']['api key']
             )
     setattr(settings, 'database', at)
     setattr(settings, 'at_insert_table', \
-            config['airtable']['insert_table_name'])
+            config['airtable']['insert table'])
     setattr(settings, 'at_link_table', \
-            config['airtable']['link_table_name'])
-    setattr(settings, 'link_field', config['airtable']['link_field'])
+            config['airtable']['link table'])
+    setattr(settings, 'link_field', config['airtable']['link field'])
     setattr(settings, 'trigger_phrase', config['parse']['Trigger Phrase'])
     setattr(settings, 'term_char', config['parse']['Termination Character'])
     
@@ -137,7 +137,17 @@ def parse_to_field(email_to_field):
             'email': email,
             }
 
-# def parse_email_message(text):
+def parse_email_message(text_to_search):
+    trigger_phrase = re.escape(settings.trigger_phrase)
+    term_char = re.escape(settings.term_char)
+    regex = re.compile(r'({} )([^{}]*)'.format(trigger_phrase, term_char),
+            re.IGNORECASE
+            )
+    found_text = regex.search(text_to_search)
+    try:
+        return found_text.group(2)
+    except AttributeError:
+        return None
 
 
 
@@ -159,12 +169,21 @@ def main():
         rec_id = search_for_email(to_info['email'], to_info['fname'], \
                 to_info['lname'])
         # email_obj.store(mess['number'], '+FLAGS', '\Seen')
+        # parse_email_message(mess['body'])
+        
         # debugging code
         # pprint(to_info)
         # print(rec_id)
 
+    # debugging code
+    parsed_text = parse_email_message('this will fail')
+    # parsed_text = parse_email_message('Can you please print this out?')
+    if parsed_text:
+        print(parsed_text)
+    else:
+        print("No text")
     # pprint(some_email)
-    email.close()
+    email_obj.close()
 
 
 if __name__ == "__main__":
