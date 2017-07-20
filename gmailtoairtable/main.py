@@ -38,20 +38,28 @@ def main():
     get_settings()
     email_info, email_obj = retrieve_mail.readmail()
 
-    # get record id for 
+    # loop through email messages
     for mess in email_info:
         # debugging code
         # print(email['to'])
-        to_info = retrieve_mail.parse_to_field(mess['to'])
-        rec_id = at_interface.search_for_email(to_info['email'], to_info['fname'], \
-                to_info['lname'])
-        print(rec_id, to_info['email'])
+        # print(rec_id, to_info['email'])
         # email_obj.store(mess['number'], '+FLAGS', '\Seen')
         parsed_text = parse_email_message(mess['body'])
         if parsed_text:
-            print(parsed_text)
+            to_info = retrieve_mail.parse_to_field(mess['to'])
+            found_rec_id = at_interface.search_for_email(
+                    to_info['email'],
+                    to_info['fname'],
+                    to_info['lname']
+                    )
+            print(json.dumps(at_interface.create_task_record(
+                    parsed_text, 
+                    found_rec_id,
+                    mess['body']
+                    )))
+            print('inserted a record')
         else:
-            print("No text")
+            print('failed to create record')
         
         # debugging code
         # pprint(to_info)

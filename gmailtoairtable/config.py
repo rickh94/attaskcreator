@@ -19,19 +19,27 @@ def get_settings():
 
     # make airtable object
     at = airtable.Airtable(
-            config['airtable']['database id'],
-            config['airtable']['api key']
+            config['Airtable']['database id'],
+            config['Airtable']['api key']
             )
 
     setattrs(settings, 
-            eml_username = config['email']['user'],
-            eml_pwd = config['email']['password'],
-            eml_smtp_server = config['email']['imap url'],
+            eml_username = config['Email']['user'],
+            eml_pwd = config['Email']['password'],
+            eml_smtp_server = config['Email']['imap url'],
+
             database = at,
-            at_insert_table = config['airtable']['insert table'],
-            at_link_table = config['airtable']['link table'],
-            link_field = config['airtable']['link field'],
-            trigger_phrase = config['parse']['Trigger Phrase'],
-            term_char = config['parse']['Termination Character']
+
+            at_tasks_table = config['Tasks Table']['name'],
+            tasks_table_link = config['Tasks Table']['link field'],
+            tasks_table_text = config['Tasks Table']['text field'],
+            tasks_table_notes = config.get('Tasks Table', 'notes field', \
+                fallback=None),
+
+            at_people_table = config['People Table']['name'],
+            people_table_key = config['People Table']['email field'],
+
+            trigger_phrase = config['Parse']['trigger phrase'],
+            term_char = config['Parse']['termination character']
             )
     

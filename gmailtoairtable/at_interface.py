@@ -6,10 +6,10 @@ import settings
 def search_for_email(email_addr, fname, lname):
     # get data
     at = settings.database
-    table_name = settings.at_link_table
+    table_name = settings.at_people_table
     table = at.get(table_name)
     # search for existing data
-    search_field = settings.link_field
+    search_field = settings.people_table_key
     curr_id = '' # for keeping track of the current record id
     # print(table_name)
     for rec in table['records']:
@@ -29,3 +29,28 @@ def search_for_email(email_addr, fname, lname):
 
     # recursive call to return record id for created record
     return search_for_email(email_addr, fname, lname)
+
+def create_task_record(text, rec_id, email_body):
+    # needed info, easier to access
+    at = settings.database
+    table_name = settings.at_tasks_table
+    text_field = settings.tasks_table_text
+    link_field = settings.tasks_table_link
+    notes_field = settings.tasks_table_notes
+
+    # data for record
+    data = {
+            text_field: text,
+            link_field: [rec_id],
+            }
+    # if a notes field was provided, put the email body into it
+
+    if notes_field:
+        data[notes_field] = email_body
+
+
+    return at.create(table_name, data)
+
+
+
+            
