@@ -19,7 +19,8 @@
   data. either way, return 'id' field of record for linking. NOTE: write
   function for generating curl calls early. __DONE__
 
-* __assemble new record with parsed data into json notation, upload to at__
+* assemble new record with parsed data into json notation, upload to
+  at __DONE!__
 
 * send email if record fails to create, general error handling
 

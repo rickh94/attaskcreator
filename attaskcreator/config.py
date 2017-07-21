@@ -26,7 +26,9 @@ def get_settings():
     setattrs(settings, 
             eml_username = config['Email']['user'],
             eml_pwd = config['Email']['password'],
-            eml_smtp_server = config['Email']['imap url'],
+            eml_imap_server = config['Email']['imap url'],
+            eml_smtp_server = config['Email']['smtp url'],
+            eml_error = config['Email']['error email'],
 
             database = at,
 

@@ -40,10 +40,6 @@ def main():
 
     # loop through email messages
     for mess in email_info:
-        # debugging code
-        # print(email['to'])
-        # print(rec_id, to_info['email'])
-        # email_obj.store(mess['number'], '+FLAGS', '\Seen')
         parsed_text = parse_email_message(mess['body'])
         if parsed_text:
             to_info = retrieve_mail.parse_to_field(mess['to'])
@@ -52,28 +48,22 @@ def main():
                     to_info['fname'],
                     to_info['lname']
                     )
-            print(json.dumps(at_interface.create_task_record(
+            at_interface.create_task_record(
                     parsed_text, 
                     found_rec_id,
                     mess['body']
-                    )))
-            print('inserted a record')
+                    )
         else:
-            print('failed to create record')
-        
-        # debugging code
-        # pprint(to_info)
-        # print(rec_id)
-
-    # debugging code
-    # parsed_text = parse_email_message('this will fail')
-    # parsed_text = parse_email_message('Can you please print this out?')
-    # if parsed_text:
-    #     print(parsed_text)
-    # else:
-    #     print("No text")
-    # pprint(some_email)
-
+            subject = 'Failed to create airtable task record'
+            body = 'The trigger phrase was not found in your email to ' + \
+                    mess['to'] + \
+                    ', so a record was not created. The body of the email '+ \
+                    'is below:\n\n' + \
+                    'Subject: {}'.format(mess['subject']) +\
+                    '\n' + mess['body']
+            retrieve_mail.sendmsg(subject, body)
+            # retrieve_mail.markunread(email_obj, mess['number'])
+                    
     retrieve_mail.closemail(email_obj)
 
 

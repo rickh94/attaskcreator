@@ -1,8 +1,11 @@
-# mail_processing.py - get and process email for gmailtoairtable
+# retrieve_mail.py - get and process email for gmailtoairtable
 import imaplib
 import email
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 import time
 import re
+import smtplib
 from html2text import html2text
 from nameparser import HumanName
 import settings
@@ -15,7 +18,7 @@ def get_text(mess):
 
 def readmail():
     mail_info = []
-    mail = imaplib.IMAP4_SSL(settings.eml_smtp_server)
+    mail = imaplib.IMAP4_SSL(settings.eml_imap_server)
     mail.login(settings.eml_username, settings.eml_pwd)
     mail.select('Inbox')
 
@@ -39,7 +42,6 @@ def readmail():
                         }
                 mail_info.append(dict_of_data)
 
-        # mail.store(num, '+FLAGS', '\Seen')
 
     # mail.close()
     return mail_info, mail
@@ -68,6 +70,36 @@ def parse_to_field(email_to_field):
 def markread(eml, num):
     eml.store(num, '+FLAGS', '\Seen')
 
+def markread(eml, num):
+    eml.store(num, '+FLAGS', '\Seen')
+
+def markunread(eml, num):
+    eml.store(num, '-FLAGS', '\Seen')
 
 def closemail(eml):
     eml.close()
+
+def sendmsg(subject, body):
+    from_eml = settings.eml_username
+    to_eml = settings.eml_error
+
+    # login to server
+    server = smtplib.SMTP(settings.eml_smtp_server, 587)
+    server.starttls()
+    server.login(settings.eml_username, settings.eml_pwd)
+
+    # assemble message
+    msg = MIMEMultipart()
+    msg['From'] = from_eml
+    msg['To'] = to_eml
+    msg['Subject'] = subject
+
+    msg.attach(MIMEText(body, 'plain'))
+    
+    text = msg.as_string()
+
+    # send the message
+    server.sendmail(from_eml, to_eml, text)
+    server.quit()
+
+
