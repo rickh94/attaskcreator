@@ -78,8 +78,19 @@ def main():
 
     try:
         os.mkdir(config_path)
+    except PermissionError:
+        print("Cannot complete install without root privileges. Please rerun",
+                "as root")
+        exit(1)
     except FileExistsError:
         pass
+
+    try:
+    # copy example config file
+        copy2(
+                os.path.join(here, 'extras', 'example.conf'),
+                config_path
+                )
     except PermissionError:
         print("Cannot complete install without root privileges. Please rerun",
                 "as root")
@@ -98,12 +109,6 @@ def main():
     run(install_cmd)
 
 
-    # copy example config file
-    copy2(
-            os.path.join(here, 'extras', 'example.conf'),
-            config_path
-            )
-
     if args.config_file:
         copy2(args.config_file, '/etc/attaskcreator/attaskcreator.conf')
     
@@ -117,8 +122,16 @@ def main():
                 os.path.join(here, 'extras', 'attaskcreator.timer'),
                 '/etc/systemd/system/'
                 )
+        
+        # restore selinux context over new units if necessary
+        try:
+            run(['restorecon', '-r', '/etc/systemd/system'])
+        except FileNotFoundError:
+            pass
+
         run(['systemctl', 'start', 'attaskcreator.timer'])
         run(['systemctl', 'enable', 'attaskcreator.timer'])
+
 
 
 
