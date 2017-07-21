@@ -17,6 +17,7 @@ def make_config_file():
     config['Email']['Password'] = input("Enter email password: ")
     config['Email']['Imap URL'] = input("Enter imap server url: ")
     config['Email']['Smtp URL'] = input("Enter smtp server url: ")
+    config['Email']['Error Email'] = input("Enter email for error messages: ")
     config['Tasks Table']['Name'] = input(
     "Enter the name of the tasks table: "
     )
