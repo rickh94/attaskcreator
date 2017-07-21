@@ -8,7 +8,7 @@ import re
 import smtplib
 from html2text import html2text
 from nameparser import HumanName
-import settings
+from attaskcreator import settings
 
 def get_text(mess):
     if mess.is_multipart():
@@ -67,6 +67,7 @@ def parse_to_field(email_to_field):
             'lname': lname,
             'email': email,
             }
+
 def markread(eml, num):
     eml.store(num, '+FLAGS', '\Seen')
 

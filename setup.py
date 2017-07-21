@@ -26,6 +26,13 @@ setup(
 
         packages=find_packages(),
 
+        install_requires=[
+            'requests',
+            'airtable',
+            'html2text',
+            'nameparser',
+            ],
+
         entry_points={
             'console_scripts': [
                 'attaskcreator = attaskcreator.main:main',

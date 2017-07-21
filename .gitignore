@@ -11,5 +11,7 @@
 # my login info
 login.conf
 
+dist
+
 # python cache
 __pycache__

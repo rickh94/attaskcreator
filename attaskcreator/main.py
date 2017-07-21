@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # change a few settings based on development vs production
-DEBUG = 1
+DEBUG = 0
 
 import json
 import re
@@ -14,11 +14,11 @@ if DEBUG == 1:
     import retrieve_mail
     import at_interface
 else:
-    from gmailtoairtable import settings
-    from gmailtoairtable.config import setattrs
-    from gmailtoairtable.config import get_settings
-    from gmailtoairtable import retrieve_mail
-    from gmailtoairtable import at_interface
+    from attaskcreator import settings
+    from attaskcreator.config import setattrs
+    from attaskcreator.config import get_settings
+    from attaskcreator import retrieve_mail
+    from attaskcreator import at_interface
 
 def parse_email_message(text_to_search):
     trigger_phrase = re.escape(settings.trigger_phrase)

@@ -1,8 +1,8 @@
 # config.py - get global settings for gmailtoairtable
 import configparser
-import settings
+from attaskcreator import settings
 from airtable import airtable
-DEBUG = 1
+DEBUG = 0
 
 # idomatic attribute setting 
 def setattrs(_self, **kwargs):
@@ -15,7 +15,7 @@ def get_settings():
     if DEBUG == 1:
         config.read("../login.conf")
     else:
-        config.read("/etc/gmailtoairtable/login.conf")
+        config.read("/etc/attaskcreator/attaskcreator.conf")
 
     # make airtable object
     at = airtable.Airtable(

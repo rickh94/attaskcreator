@@ -1,3 +1,0 @@
-[console_scripts]
-attaskcreator = attaskcreator.main:main
-
