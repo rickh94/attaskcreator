@@ -1,0 +1,8 @@
+[Unit]
+Description=Create tasks in airtable from emails
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/attaskcreator 
+
+# vim: se ft=systemd:

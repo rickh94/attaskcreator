@@ -1,0 +1,12 @@
+[Unit]
+Description=Check for new tasks every 5 minutes
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=5min
+Unit=attaskcreator.service
+
+[Install]
+WantedBy=timers.target
+
+# vim: se ft=systemd:
