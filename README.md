@@ -1,4 +1,4 @@
-# Airtable Task Creator (v0.1)
+# Airtable Task Creator (v0.2)
 Creates entries in an Airtable 'Tasks' table linked to people in a people
 table from emails sent to those people (and copied to a burner email account).
 If the email address is not in the table, a new record will be created for

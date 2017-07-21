@@ -11,6 +11,11 @@ config_path = '/etc/attaskcreator/'
 
 def make_config_file():
     config = configparser.ConfigParser()
+    config['Airtable'] = {}
+    config['Email'] = {}
+    config['Tasks Table'] = {}
+    config['People Table'] = {}
+    config['Parse'] = {}
     config['Airtable']['Database ID'] = input("Enter Airtable database ID: ")
     config['Airtable']['api key'] = input("Enter Airtable API key: ")
     config['Email']['User'] = input("Enter email user: ")

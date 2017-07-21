@@ -4,7 +4,7 @@ from os import path
 from subprocess import run
 
 here = path.abspath(path.dirname(__file__))
-vers = '0.1.0'
+vers = '0.2.0'
 desc = 'Script to create task records in airtable from parsed emails'
 
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
