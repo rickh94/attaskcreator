@@ -1,4 +1,4 @@
-# airtable_interface.py - all the airtable calls for gmailtoairtable
+# at_interface.py - all the airtable calls for gmailtoairtable
 from airtable import airtable
 from attaskcreator import settings
 
@@ -51,6 +51,3 @@ def create_task_record(text, rec_id, email_body):
 
     return at.create(table_name, data)
 
-
-
-            
