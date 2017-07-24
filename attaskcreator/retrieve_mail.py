@@ -81,7 +81,9 @@ def closemail(eml):
     eml.close()
 
 def sendmsg(subject, body):
-    from_eml = settings.eml_username
+    from_eml = email.utils.formataddr(
+            ("Airtable Task Creator", settings.eml_username)
+            )
     to_eml = settings.eml_error
 
     # login to server
