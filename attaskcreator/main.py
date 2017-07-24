@@ -36,7 +36,16 @@ def parse_email_message(text_to_search):
 def main():
     # get settings and email
     get_settings()
-    email_info, email_obj = retrieve_mail.readmail()
+    mail = retrieve_mail.FetchMail(
+            settings.eml_imap_server, 
+            eml_username,
+            eml_pwd
+            )
+    messages = mail.fetch_unread_messages()
+    email_data = []
+    for mess in messages:
+        email_data.append(mail.read_info(mess))
+
 
     # loop through email messages
     for mess in email_info:
