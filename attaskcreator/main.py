@@ -46,17 +46,18 @@ def main():
     for mess in messages:
         email_data.append(mail.read_info(mess))
 
-
     # loop through email messages
     for mess in email_info:
         parsed_text = parse_email_message(mess['body'])
         if parsed_text:
+            # get needed info
             to_info = retrieve_mail.parse_to_field(mess['to'])
             found_rec_id = at_interface.search_for_email(
                     to_info['email'],
                     to_info['fname'],
                     to_info['lname']
                     )
+            # pass to record method for creation
             at_interface.create_task_record(
                     parsed_text, 
                     found_rec_id,

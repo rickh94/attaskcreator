@@ -1,5 +1,5 @@
 # retrieve_mail.py - get and process email for gmailtoairtable
-import imaplib
+import imaplib, email, time, re, smtplib, os
 import email
 # import email.utils
 from email.mime.text import MIMEText
@@ -9,7 +9,6 @@ import re
 import smtplib
 from html2text import html2text
 from nameparser import HumanName
-import settings
 # from attaskcreator import settings
 
 class FetchMail():
@@ -44,6 +43,12 @@ class FetchMail():
 
     def save_attachment(self, msg, download_folder="/tmp"):
         att_path = None
+        if not os.path.exists(download_folder):
+            try:
+                os.makedirs(download_folder)
+            except PermissionError:
+                download_folder = "/tmp"
+
         for part in msg.walk():
             if part.get_content_maintype() == 'multipart':
                 continue
