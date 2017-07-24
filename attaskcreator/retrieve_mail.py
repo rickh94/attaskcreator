@@ -12,12 +12,73 @@ from nameparser import HumanName
 import settings
 # from attaskcreator import settings
 
-def get_text(mess):
-    if mess.is_multipart():
-        return get_text(mess.get_payload(0))
-    else:
-        return mess.get_payload(None, True).decode('utf-8')
+class FetchMail():
 
+    connection = None
+    error = None
+
+    def __init__(self, mail_server, username, password):
+        self.connection = imaplib.IMAP4_SSL(mail_server)
+        self.connection.login(username, password)
+        self.connection.select('Inbox')
+
+    def fetch_unread_messages(self):
+        emails = []
+        (result, messages) = self.connection.search(None, 'UnSeen')
+        if result == 'OK':
+            for message in messages[0].split():
+                try:
+                    ret, data = self.connection.fetch(message, '(RFC822)')
+                except:
+                    print("No new emails to read.")
+                    self.close_connection()
+                    exit()
+                msg = email.message_from_bytes(data[0][1])
+                if isinstance(msg, str) == False:
+                    emails.append(msg)
+
+            return emails
+
+        self.error = "Failed to retreive emails."
+        return emails
+
+    def save_attachment(self, msg, download_folder="/tmp"):
+        att_path = None
+        for part in msg.walk():
+            if part.get_content_maintype() == 'multipart':
+                continue
+            if part.get('Content-Disposition') is None:
+                continue
+
+            filename = part.get_filename()
+            att_path = os.path.join(download_folder, filename)
+
+            if not os.path.isfile(att_path):
+                fp = open(att_path, 'wb')
+                fp.write(part.get_payload(decode=True))
+                fp.close()
+
+        return att_path
+
+    def read_info(self, msg):
+        return {
+                'from': msg['from'],
+                'to': msg['to'],
+                'subject': msg['subject'],
+                'date': msg['date'],
+                'body': html2text(self.get_text(msg)),
+                }
+
+    def get_text(self, mess):
+        if mess.is_multipart():
+            return self.get_text(mess.get_payload(0))
+        else:
+            return mess.get_payload(None, True).decode('utf-8')
+
+
+
+"""
+DEPRECATED (but keeping for a while for reference)
 def readmail():
     mail_info = []
     mail = imaplib.IMAP4_SSL(settings.eml_imap_server)
@@ -40,13 +101,13 @@ def readmail():
                         'subject': msg['subject'],
                         'date': msg['date'],
                         'body': html2text(get_text(msg)),
-                        'number': num,
                         }
                 mail_info.append(dict_of_data)
 
     # mail.close()
     return mail_info, mail
 
+"""
 
 def parse_to_field(email_to_field):
     # split name from email
