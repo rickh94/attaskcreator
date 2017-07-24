@@ -1,6 +1,7 @@
 # retrieve_mail.py - get and process email for gmailtoairtable
 import imaplib
 import email
+# import email.utils
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import time
@@ -8,7 +9,8 @@ import re
 import smtplib
 from html2text import html2text
 from nameparser import HumanName
-from attaskcreator import settings
+import settings
+# from attaskcreator import settings
 
 def get_text(mess):
     if mess.is_multipart():
@@ -42,34 +44,28 @@ def readmail():
                         }
                 mail_info.append(dict_of_data)
 
-
     # mail.close()
     return mail_info, mail
 
 
 def parse_to_field(email_to_field):
     # split name from email
-    searched = re.search(r'([^<]*)<([^>]*)>', email_to_field)
+    parsed = email.utils.parseaddr(email_to_field)
     # store email
     # parse name
-    try:
-        email = searched.group(2)
-        name = HumanName(searched.group(1))
+    fname = ''
+    lname = ''
+    email_addr = parsed[1]
+    if parsed[0] != '':
+        name = HumanName(parsed[0])
         fname = name.first
         lname = name.last
-    # return attributes
-    except AttributeError:
-        email = email_to_field
-        fname = ''
-        lname = ''
+
     return { 
             'fname': fname,
             'lname': lname,
-            'email': email,
+            'email': email_addr,
             }
-
-def markread(eml, num):
-    eml.store(num, '+FLAGS', '\Seen')
 
 def markread(eml, num):
     eml.store(num, '+FLAGS', '\Seen')
