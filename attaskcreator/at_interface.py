@@ -51,3 +51,23 @@ def create_task_record(text, rec_id, email_body):
 
     return at.create(table_name, data)
 
+def at_upload_attach(rec_name, *urls):
+    # get settings
+    at = settings.database
+    table_name = settings.at_files_table
+    name_field = settings.files_table_name_field
+    attach_field = settings.files_table_attach_field
+
+    all_urls = []
+
+    for url in urls:
+        all_urls.append({"url": url})
+
+    data = {
+            name_field: rec_name,
+            attach_field: all_urls,
+            }
+
+    at.create(table_name, data)
+
+
