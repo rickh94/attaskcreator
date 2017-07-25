@@ -39,7 +39,7 @@ def main():
         if parsed_text:
             # get needed info
             to_info = retrievemail.parse_to_field(data['to'])
-            found_rec_id = at_interface.search_for_email(
+            found_rec_id = atinterface.search_for_email(
                     to_info['email'],
                     to_info['fname'],
                     to_info['lname']
@@ -55,10 +55,10 @@ def main():
                 for path in attachments:
                     url = s3interface.make_url(path, settings.bucket)
                     s3_urls.append(url)
-                file_rec = at_interface.at_upload_attach(parsed_text, s3_urls)
+                file_rec = atinterface.at_upload_attach(parsed_text, s3_urls)
 
             # pass to record method for creation
-            at_interface.create_task_record(
+            atinterface.create_task_record(
                     parsed_text, 
                     found_rec_id,
                     mess['body'],
