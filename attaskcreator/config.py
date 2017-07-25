@@ -2,7 +2,6 @@
 import configparser
 from attaskcreator import settings
 from airtable import airtable
-DEBUG = 0
 
 # idomatic attribute setting 
 def setattrs(_self, **kwargs):
@@ -12,10 +11,7 @@ def setattrs(_self, **kwargs):
 def get_settings():
     config = configparser.ConfigParser()
     # development location for file
-    if DEBUG == 1:
-        config.read("../login.conf")
-    else:
-        config.read("/etc/attaskcreator/attaskcreator.conf")
+    config.read("/etc/attaskcreator/attaskcreator.conf")
 
     # make airtable object
     at = airtable.Airtable(
@@ -36,7 +32,7 @@ def get_settings():
             tasks_table_link = config['Tasks Table']['link field'],
             tasks_table_text = config['Tasks Table']['text field'],
             tasks_table_notes = config.get('Tasks Table', 'notes field', \
-                fallback=None),
+                    fallback=None),
 
             at_people_table = config['People Table']['name'],
             people_table_key = config['People Table']['email field'],
@@ -44,4 +40,4 @@ def get_settings():
             trigger_phrase = config['Parse']['trigger phrase'],
             term_char = config['Parse']['termination character']
             )
-    
+

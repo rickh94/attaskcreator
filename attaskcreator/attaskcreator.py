@@ -1,24 +1,14 @@
 #!/usr/bin/env python3
 
 # change a few settings based on development vs production
-DEBUG = 0
 
 import json
 import re
-
-if DEBUG == 1:
-    import settings
-    from config import get_settings
-    from config import setattrs
-    from pprint import pprint
-    import retrieve_mail
-    import at_interface
-else:
-    from attaskcreator import settings
-    from attaskcreator.config import setattrs
-    from attaskcreator.config import get_settings
-    from attaskcreator import retrieve_mail
-    from attaskcreator import at_interface
+from attaskcreator import settings
+from attaskcreator.config import setattrs
+from attaskcreator.config import get_settings
+from attaskcreator import retrievemail
+from attaskcreator import atinterface
 
 def parse_email_message(text_to_search):
     trigger_phrase = re.escape(settings.trigger_phrase)

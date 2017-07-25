@@ -1,5 +1,4 @@
 # retrieve_mail.py - get and process email for gmailtoairtable
-import imaplib, email, time, re, smtplib, os
 import email
 # import email.utils
 from email.mime.text import MIMEText
@@ -7,6 +6,7 @@ from email.mime.multipart import MIMEMultipart
 import time
 import re
 import smtplib
+import os
 from html2text import html2text
 from nameparser import HumanName
 # from attaskcreator import settings

@@ -9,6 +9,7 @@ from sys import exit
 here = os.getcwd()
 config_path = '/etc/attaskcreator/'
 
+
 def make_config_file():
     config = configparser.ConfigParser()
     config['Airtable'] = {}
@@ -24,55 +25,56 @@ def make_config_file():
     config['Email']['Smtp URL'] = input("Enter smtp server url: ")
     config['Email']['Error Email'] = input("Enter email for error messages: ")
     config['Tasks Table']['Name'] = input(
-    "Enter the name of the tasks table: "
+        "Enter the name of the tasks table: "
     )
     config['Tasks Table']['link field'] = input(
-            "Enter field in tasks table that links to a people table: "
-            )
+        "Enter field in tasks table that links to a people table: "
+    )
     config['Tasks Table']['text field'] = input(
-            "Enter field for insertion of parsed text (in tasks table): "
-            )
+        "Enter field for insertion of parsed text (in tasks table): "
+    )
     config['Tasks Table']['notes field'] = input(
-            "Enter field for insertion of full email body (blank for none): "
-            )
+        "Enter field for insertion of full email body (blank for none): "
+    )
     config['People Table']['name'] = input(
-            "Enter the name of the people table: "
-            )
+        "Enter the name of the people table: "
+    )
     config['People Table']['email field'] = input(
-            "Enter the name of the email field in the people table: "
-            )
+        "Enter the name of the email field in the people table: "
+    )
     config['Parse']['trigger phrase'] = input(
-            "Enter the phrase that will trigger text insertion: "
-            )
+        "Enter the phrase that will trigger text insertion: "
+    )
     config['Parse']['termination character'] = input(
-            "Enter the character that will signal the end of text insertion: "
-            )
+        "Enter the character that will signal the end of text insertion: "
+    )
 
     with open(os.path.join(config_path, 'attaskcreator.conf'), "w") as f:
         config.write(f)
 
+
 def main():
     parser = argparse.ArgumentParser(prog='install.py',
-            description='Installation script for attaskcreator'
-            )
+                                     description='Installation script for attaskcreator'
+                                     )
 
-    parser.add_argument("-p", "--install-prefix", 
-            help="Specify alternate installation prefix"
-            )
+    parser.add_argument("-p", "--install-prefix",
+                        help="Specify alternate installation prefix"
+                        )
 
     parser.add_argument("-s", "--install-units",
-            action='store_true',
-            help="Install systemd service and timer"
-            )
+                        action='store_true',
+                        help="Install systemd service and timer"
+                        )
 
     parser.add_argument("-c", "--config-file",
-            help="Specify a configuration file"
-            )
+                        help="Specify a configuration file"
+                        )
 
     parser.add_argument("--make-config",
-            action='store_true',
-            help="Interactively generate config file"
-            )
+                        action='store_true',
+                        help="Interactively generate config file"
+                        )
 
     args = parser.parse_args()
 
@@ -80,20 +82,20 @@ def main():
         os.mkdir(config_path)
     except PermissionError:
         print("Cannot complete install without root privileges. Please rerun",
-                "as root")
+              "as root")
         exit(1)
     except FileExistsError:
         pass
 
     try:
-    # copy example config file
+        # copy example config file
         copy2(
-                os.path.join(here, 'extras', 'example.conf'),
-                config_path
-                )
+            os.path.join(here, 'extras', 'example.conf'),
+            config_path
+        )
     except PermissionError:
         print("Cannot complete install without root privileges. Please rerun",
-                "as root")
+              "as root")
         exit(1)
 
     if args.make_config:
@@ -108,21 +110,19 @@ def main():
     # install
     run(install_cmd)
 
-
     if args.config_file:
         copy2(args.config_file, '/etc/attaskcreator/attaskcreator.conf')
-    
 
     if args.install_units:
         copy2(
-                os.path.join(here, 'extras', 'attaskcreator.service'),
-                '/etc/systemd/system/'
-                )
+            os.path.join(here, 'extras', 'attaskcreator.service'),
+            '/etc/systemd/system/'
+        )
         copy2(
-                os.path.join(here, 'extras', 'attaskcreator.timer'),
-                '/etc/systemd/system/'
-                )
-        
+            os.path.join(here, 'extras', 'attaskcreator.timer'),
+            '/etc/systemd/system/'
+        )
+
         # restore selinux context over new units if necessary
         try:
             run(['restorecon', '-r', '/etc/systemd/system'])
@@ -131,8 +131,6 @@ def main():
 
         run(['systemctl', 'start', 'attaskcreator.timer'])
         run(['systemctl', 'enable', 'attaskcreator.timer'])
-
-
 
 
 if __name__ == "__main__":

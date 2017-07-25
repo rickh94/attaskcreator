@@ -35,7 +35,7 @@ setup(
 
         entry_points={
             'console_scripts': [
-                'attaskcreator = attaskcreator.main:main',
+                'attaskcreator = attaskcreator.attaskcreator:main',
                 ],
             },
         )
