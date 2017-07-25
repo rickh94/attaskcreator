@@ -7,10 +7,10 @@ import time
 import re
 import smtplib
 import os
+import imaplib
 from html2text import html2text
 from nameparser import HumanName
-# from attaskcreator import settings
-import settings
+from attaskcreator import settings
 
 
 class FetchMail():

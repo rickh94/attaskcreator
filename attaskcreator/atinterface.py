@@ -1,7 +1,6 @@
 # at_interface.py - all the airtable calls for gmailtoairtable
 from airtable import airtable
-# from attaskcreator import settings
-import settings
+from attaskcreator import settings
 
 # find email in link table
 

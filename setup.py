@@ -27,11 +27,12 @@ setup(
     packages=find_packages(),
 
     install_requires=[
-            'requests',
-            'airtable',
-            'html2text',
-            'nameparser',
-    ],
+                    'requests',
+                    'airtable',
+                    'html2text',
+                    'nameparser',
+                    'boto3'
+                ],
 
     entry_points={
         'console_scripts': [
