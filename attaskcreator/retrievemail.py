@@ -10,6 +10,7 @@ import os
 from html2text import html2text
 from nameparser import HumanName
 # from attaskcreator import settings
+import settings
 
 class FetchMail():
 
@@ -41,14 +42,14 @@ class FetchMail():
         self.error = "Failed to retreive emails."
         return emails
 
-    def save_attachment(self, msg, download_folder="/tmp"):
-        att_path = None
+    def save_attachments(self, msg, download_folder="/tmp"):
         if not os.path.exists(download_folder):
             try:
                 os.makedirs(download_folder)
             except PermissionError:
                 download_folder = "/tmp"
 
+        paths = []
         for part in msg.walk():
             if part.get_content_maintype() == 'multipart':
                 continue
@@ -63,7 +64,9 @@ class FetchMail():
                 fp.write(part.get_payload(decode=True))
                 fp.close()
 
-        return att_path
+            paths.append(att_path)
+
+        return paths
 
     def read_info(self, msg):
         return {
