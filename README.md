@@ -51,6 +51,20 @@ __API Key:__ The api key for the database you want to use. (See the
 __Database ID:__ The database id for the database you want to use. This is the
 part of the api url after /v0/.
 
+[AWS]
+__Access Key ID:__ Api access key id for uploading attachments temporarily to
+s3
+
+__Secret Access Key:__ Secret key for uploading attachments temporarily to s3
+
+__Bucket:__ Bucket for uploading attachments temporarily.
+
+Airtable can only accept files in the form of urls to download. Current
+implementation uploads attachments to s3 and generates a pre-signed url for
+Airtable to use. It is recommended to configure an AWS user that has access
+only to the bucket used for this and expire the objects in that bucket very
+quickly.
+
 
 [Tasks Table]
 
@@ -58,7 +72,9 @@ This is the table that new records will be inserted into
 
 __Name:__ the name of the table
 
-__Link Field:__ The field that is linked to the people table
+__People Link Field:__ The field that is linked to the people table
+
+__Attachment Link Field:__ The field that is linked to the files table
 
 __Text Field:__ The field where the parsed text will be inserted
 
@@ -73,6 +89,17 @@ This is the table with all the people in it.
 __Name:__ the name of the table
 
 __Email Field:__ The field containing the email addresses
+
+
+[Files Table]
+
+This is the table that will have attachments uploaded to it.
+
+__Name:__ the name of the table.
+
+__Key Field:__ the primary key for the table.
+
+__Attachment Field:__ The field where the actual attachments will be uploaded.
 
 
 [Parse]
