@@ -10,7 +10,7 @@ import os
 import imaplib
 from html2text import html2text
 from nameparser import HumanName
-from attaskcreator import settings
+from . import settings
 
 
 class FetchMail():
@@ -85,37 +85,6 @@ class FetchMail():
             return mess.get_payload(None, True).decode('utf-8')
 
 
-"""
-DEPRECATED (but keeping for a while for reference)
-def readmail():
-    mail_info = []
-    mail = imaplib.IMAP4_SSL(settings.eml_imap_server)
-    mail.login(settings.eml_username, settings.eml_pwd)
-    mail.select('Inbox')
-
-    typ, data = mail.search(None, 'UnSeen')
-
-    for num in data[0].split():
-        typ, data = mail.fetch(num, '(RFC822)')
-
-        for response_part in data:
-            dict_of_data = {}
-            if isinstance(response_part, tuple):
-                msg = email.message_from_bytes(response_part[1])
-                # store headers in dict
-                dict_of_data = {
-                        'from': msg['from'],
-                        'to': msg['to'],
-                        'subject': msg['subject'],
-                        'date': msg['date'],
-                        'body': html2text(get_text(msg)),
-                        }
-                mail_info.append(dict_of_data)
-
-    # mail.close()
-    return mail_info, mail
-
-"""
 
 
 def parse_to_field(email_to_field):

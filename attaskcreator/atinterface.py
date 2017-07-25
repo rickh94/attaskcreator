@@ -1,97 +1,129 @@
-# at_interface.py - all the airtable calls for gmailtoairtable
-from airtable import airtable
-from attaskcreator import settings
+"""This module performs the interaction with airtable for attaskcreator.
 
-# find email in link table
-
-
-def search_for_email(email_addr, fname, lname):
-    # get data
-    at = settings.database
-    table_name = settings.at_people_table
-    # search for existing data
-    search_field = settings.people_table_key
-    curr_id = ''  # for keeping track of the current record id
-    # print(table_name)
-    rec_id = search_for_rec(table_name, search_field, email_addr)
-    if rec_id is not None:
-        return rec_id
-    else:
-        # create new record if none found
-        data = {
-            "Email": email_addr,
-            "First Name": fname,
-            "Last Name": lname,
-        }
-
-        at.create(table_name, data)
-
-        # recursive call to return record id for created record
-        return search_for_rec(table_name, search_field, email_addr)
+Contains functions for searching for records, creating records, and uploading
+files from urls.
+"""
+from airtable.airtable import Airtable
 
 
-def search_for_rec(table, field, term):
-    curr_id = ''
-    at = settings.database
-    table = at.get(table)
-    for rec in table['records']:
-        for k, v in rec.items():
+class MyDatabase(Airtable):
+    """This class extends the Airtable class for specific uses.
+
+    It has additonal searching methods and the ability to upload files more
+    easily.
+    """
+
+    def search_for_email(self, table_name, eml_fielddata, fname_fielddata,
+                         lname_fielddata):
+        """Searches for an email address in a airtable database table and creates a record if it is
+        not found.
+
+        It takes the table name as input as well as field, data tuples for
+        searching and assigment of email, fname, and lname fields.
+        """
+        eml_field, eml_addr = eml_fielddata
+        fname_field, fname = fname_fielddata
+        lname_field, lname = lname_fielddata
+        rec_id = self.search_for_rec(table_name, eml_field, eml_addr)
+        if rec_id is not None:
+            return rec_id
+        else:
+            # create new record if none found
+            data = {
+                eml_field: eml_addr,
+                fname_field: fname,
+                lname_field: lname,
+            }
+
+            self.create(table_name, data)
+
+            # get id for newly created record
+            return self.search_for_rec(table_name, eml_field, eml_addr)
+
+
+    def search_for_rec(self, table, field, term):
+        """Searches for a record in an airtable database table and returns its
+        'id' if found and None if it is not found.
+
+        The search is performed in a specified field for a specified term.
+        """
+        table = self.get(table)
+        for rec in table['records']:
             curr_id = rec['id']
             try:
                 if term in rec['fields'][field]:
                     # return if search term is found
-                    return(curr_id)
+                    return curr_id
             # if key is missing entirely, skip to next record
             except KeyError:
                 continue
 
-    # return none if nothing found (for control flow)
-    return None
+        return None
 
 
-def create_task_record(text, rec_id, email_body, attach_rec=None):
-    # needed info, easier to access
-    at = settings.database
-    table_name = settings.at_tasks_table
-    text_field = settings.tasks_table_text
-    link_field = settings.tasks_table_person
-    notes_field = settings.tasks_table_notes
-    attach_field = settings.tasks_table_attach
+    def create_task_record(self, table_name, text_fielddata, person_fielddata,
+                           notes_fielddata=(), attach_fielddata=()):
+        """Creates a linked record in a tasks table from data collected from an email.
 
-    # data for record
-    data = {
-        text_field: text,
-        link_field: [rec_id],
-    }
-    # if a notes field was provided, put the email body into it
+        The record is created from found text, a link to the record for a person
+        in a people table, the entire email body from which the text was taken and
+        optionally a link to a record of attachments from that email.
 
-    if notes_field is not None:
-        data[notes_field] = email_body
+        All _fielddata arguments are tuples of a field name and the data for
+        that field. Unspecified fields default to empty tuple.
+        """
+        text_field, text = text_fielddata
+        person_field, person_id = person_fielddata
+        # airtable requires record links to be in lists.
+        if not isinstance(person_id, list):
+            person_id = [person_id]
 
-    if attach_rec is not None:
-        data[attach_field] = [attach_rec]
+        # data for record
+        data = {
+            text_field: text,
+            person_field: person_id,
+        }
+        # check optional parameters
+        if notes_fielddata:
+            notes_field, notes = notes_fielddata
+            data[notes_field] = notes
+        #
+        if attach_fielddata:
+            attach_field, attach_id = attach_fielddata
+            if not isinstance(attach_id, list):
+                attach_id = [attach_id]
+            data[attach_field] = attach_id
 
-    return at.create(table_name, data)
+        self.create(table_name, data)
+        return None
 
 
-def at_upload_attach(rec_name, urls):
-    # get settings
-    at = settings.database
-    table_name = settings.at_files_table
-    name_field = settings.files_table_name_field
-    attach_field = settings.files_table_attach_field
+    def upload_attach(self, table_name, name_fielddata, files_fielddata):
+        """Uploads files to airtable from a list of specified urls to a new record
+        and return the 'id' of that record.
 
-    all_urls = []
+        All _fielddata arguments are tuples of a field name and the data for
+        that field. Unspecified fields default to empty tuple.
+        """
+        # get settings
+        name_field, name = name_fielddata
+        attach_field, urls = files_fielddata
 
-    for url in urls:
-        all_urls.append({"url": url})
+        if not isinstance(urls, list):
+            urls = [urls]
 
-    data = {
-        name_field: rec_name,
-        attach_field: all_urls,
-    }
+        all_urls = []
 
-    at.create(table_name, data)
+        # format urls for airtable to parse
+        for url in urls:
+            all_urls.append({"url": url})
 
-    # return new rec id
-    return search_for_rec(table_name, name_field, rec_name)
+        data = {
+            name_field: name,
+            attach_field: all_urls,
+        }
+
+        self.create(table_name, data)
+
+        # return new rec id
+        return self.search_for_rec(table_name, name_field, name)

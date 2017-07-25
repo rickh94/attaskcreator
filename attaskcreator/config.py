@@ -3,7 +3,7 @@ import configparser
 import atexit
 import os
 from attaskcreator import settings
-from airtable import airtable
+from attaskcreator.atinterface import MyDatabase
 
 # idomatic attribute setting
 
@@ -18,7 +18,7 @@ def get_settings():
     config.read("/etc/attaskcreator/attaskcreator.conf")
 
     # make airtable object
-    at = airtable.Airtable(
+    atdb = MyDatabase(
         config['Airtable']['database id'],
         config['Airtable']['api key']
     )
@@ -32,7 +32,7 @@ def get_settings():
              eml_error=config['Email']['error email'],
 
              # database config
-             database=at,
+             database=atdb,
 
              # temporary bucket
              bucket=config['AWS']['bucket'],
@@ -41,8 +41,7 @@ def get_settings():
              at_tasks_table=config['Tasks Table']['name'],
              tasks_table_person=config['Tasks Table']['people link field'],
              tasks_table_text=config['Tasks Table']['text field'],
-             tasks_table_notes=config.get('Tasks Table', 'notes field',
-                                          fallback=None),
+             tasks_table_notes=config['Tasks Table']['notes field'],
              tasks_table_attach=config['Tasks Table']['attachment link field'],
 
              # people table
