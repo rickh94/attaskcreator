@@ -12,6 +12,7 @@ from nameparser import HumanName
 # from attaskcreator import settings
 import settings
 
+
 class FetchMail():
 
     connection = None
@@ -70,19 +71,18 @@ class FetchMail():
 
     def read_info(self, msg):
         return {
-                'from': msg['from'],
-                'to': msg['to'],
-                'subject': msg['subject'],
-                'date': msg['date'],
-                'body': html2text(self.get_text(msg)),
-                }
+            'from': msg['from'],
+            'to': msg['to'],
+            'subject': msg['subject'],
+            'date': msg['date'],
+            'body': html2text(self.get_text(msg)),
+        }
 
     def get_text(self, mess):
         if mess.is_multipart():
             return self.get_text(mess.get_payload(0))
         else:
             return mess.get_payload(None, True).decode('utf-8')
-
 
 
 """
@@ -117,6 +117,7 @@ def readmail():
 
 """
 
+
 def parse_to_field(email_to_field):
     # split name from email
     parsed = email.utils.parseaddr(email_to_field)
@@ -130,25 +131,29 @@ def parse_to_field(email_to_field):
         fname = name.first
         lname = name.last
 
-    return { 
-            'fname': fname,
-            'lname': lname,
-            'email': email_addr,
-            }
+    return {
+        'fname': fname,
+        'lname': lname,
+        'email': email_addr,
+    }
+
 
 def markread(eml, num):
     eml.store(num, '+FLAGS', '\Seen')
 
+
 def markunread(eml, num):
     eml.store(num, '-FLAGS', '\Seen')
+
 
 def closemail(eml):
     eml.close()
 
+
 def sendmsg(subject, body):
     from_eml = email.utils.formataddr(
-            ("Airtable Task Creator", settings.eml_username)
-            )
+        ("Airtable Task Creator", settings.eml_username)
+    )
     to_eml = settings.eml_error
 
     # login to server
@@ -163,11 +168,9 @@ def sendmsg(subject, body):
     msg['Subject'] = subject
 
     msg.attach(MIMEText(body, 'plain'))
-    
+
     text = msg.as_string()
 
     # send the message
     server.sendmail(from_eml, to_eml, text)
     server.quit()
-
-

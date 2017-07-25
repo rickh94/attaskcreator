@@ -5,20 +5,18 @@
 import boto3
 import os
 
+
 def make_url(filename, bucket):
     s3 = boto3.client('s3')
     basename = os.path.basename(filename)
 
     s3.upload_file(filename, bucket, basename)
 
-
     url = s3.generate_presigned_url(
-            ClientMethod='get_object',
-            Params={
-                'Bucket': bucket,
-                'Key': basename
-                }
-            )
+        ClientMethod='get_object',
+        Params={
+            'Bucket': bucket,
+            'Key': basename
+        }
+    )
     return url
-
-
