@@ -23,11 +23,11 @@ def make_config_file():
 
     config['AWS']['Access Key ID'] = input("Enter AWS Key ID: ")
     config['AWS']['Secret Access Key'] = input(
-            "Enter AWS Secret Access Key: "
-            )
+        "Enter AWS Secret Access Key: "
+    )
     config['AWS']['bucket'] = input(
-            "Enter AWS bucket for temporary attachment storage: "
-            )
+        "Enter AWS bucket for temporary attachment storage: "
+    )
 
     config['Email']['User'] = input("Enter email user: ")
     config['Email']['Password'] = input("Enter email password: ")
@@ -45,28 +45,28 @@ def make_config_file():
         "Enter field for insertion of parsed text (in tasks table): "
     )
     config['Tasks Table']['notes field'] = input(
-            "Enter field for insertion of full email body (blank for none): "
-            )
+        "Enter field for insertion of full email body (blank for none): "
+    )
     config['Tasks Table']['attachment link field'] = input(
-            "Enter field for link to files (attachments) table: "
-            )
+        "Enter field for link to files (attachments) table: "
+    )
 
     config['People Table']['name'] = input(
         "Enter the name of the people table: "
     )
     config['People Table']['email field'] = input(
-            "Enter the name of the email field in the people table: "
-            )
+        "Enter the name of the email field in the people table: "
+    )
 
     config['Files Table']['name'] = input(
-            "Enter the name of the files table (for attachment uploads): "
-            )
+        "Enter the name of the files table (for attachment uploads): "
+    )
     config['Files Table']['key field'] = input(
-            "Enter the primary field of the files table: "
-            )
+        "Enter the primary field of the files table: "
+    )
     config['Files Table']['attachment field'] = input(
-            "Enter the field for attachments to be uploaded into: "
-            )
+        "Enter the field for attachments to be uploaded into: "
+    )
 
     config['Parse']['trigger phrase'] = input(
         "Enter the phrase that will trigger text insertion: "

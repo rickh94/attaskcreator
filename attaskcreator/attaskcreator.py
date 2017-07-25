@@ -7,6 +7,7 @@ from attaskcreator.config import setattrs
 from attaskcreator.config import get_settings
 from attaskcreator import retrievemail
 from attaskcreator import atinterface
+from attaskcreator import s3interface
 
 def parse_email_message(text_to_search):
     trigger_phrase = re.escape(settings.trigger_phrase)
@@ -24,7 +25,7 @@ def parse_email_message(text_to_search):
 def main():
     # get settings and email
     get_settings()
-    mail = retrieve_mail.FetchMail(
+    mail = retrievemail.FetchMail(
             settings.eml_imap_server, 
             settings.eml_username,
             settings.eml_pwd
@@ -37,7 +38,7 @@ def main():
         parsed_text = parse_email_message(data['body'])
         if parsed_text:
             # get needed info
-            to_info = retrieve_mail.parse_to_field(data['to'])
+            to_info = retrievemail.parse_to_field(data['to'])
             found_rec_id = at_interface.search_for_email(
                     to_info['email'],
                     to_info['fname'],
@@ -52,7 +53,7 @@ def main():
             if attachments != []:
                 s3_urls = []
                 for path in attachments:
-                    url = s3_interface.s3_make_url(path, settings.bucket)
+                    url = s3interface.make_url(path, settings.bucket)
                     s3_urls.append(url)
                 file_rec = at_interface.at_upload_attach(parsed_text, s3_urls)
 
@@ -71,10 +72,7 @@ def main():
                     'is below:\n\n' + \
                     'Subject: {}'.format(mess['subject']) +\
                     '\n' + mess['body']
-            retrieve_mail.sendmsg(subject, body)
-            # retrieve_mail.markunread(email_obj, mess['number'])
-                    
-    # retrieve_mail.closemail(email_obj)
+            retrievemail.sendmsg(subject, body)
 
 
 if __name__ == "__main__":

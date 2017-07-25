@@ -5,7 +5,7 @@
 import boto3
 import os
 
-def s3_make_url(filename, bucket):
+def make_url(filename, bucket):
     s3 = boto3.client('s3')
     basename = os.path.basename(filename)
 
