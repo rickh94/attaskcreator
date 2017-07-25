@@ -9,7 +9,8 @@ import re
 import smtplib
 from html2text import html2text
 from nameparser import HumanName
-from attaskcreator import settings
+# from attaskcreator import settings
+import settings
 
 class FetchMail():
 

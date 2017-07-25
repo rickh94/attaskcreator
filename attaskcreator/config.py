@@ -1,9 +1,10 @@
 # config.py - get global settings for gmailtoairtable
 import configparser
-import atexit
-from attaskcreator import settings
+import atexit, os
+# from attaskcreator import settings
+import settings
 from airtable import airtable
-DEBUG = 0
+DEBUG = 1
 
 # idomatic attribute setting 
 def setattrs(_self, **kwargs):
@@ -40,10 +41,11 @@ def get_settings():
 
             # tasks table
             at_tasks_table = config['Tasks Table']['name'],
-            tasks_table_link = config['Tasks Table']['link field'],
+            tasks_table_person = config['Tasks Table']['people link field'],
             tasks_table_text = config['Tasks Table']['text field'],
             tasks_table_notes = config.get('Tasks Table', 'notes field', \
                 fallback=None),
+            tasks_table_attach = config['Tasks Table']['attachment link field'],
 
             # people table
             at_people_table = config['People Table']['name'],
@@ -69,5 +71,5 @@ def get_settings():
 
 def unset_aws():
     os.environ['AWS_ACCESS_KEY_ID'] = ''
-    os.environt['AWS_SECRET_ACCESS_KEY'] = ''
+    os.environ['AWS_SECRET_ACCESS_KEY'] = ''
     
