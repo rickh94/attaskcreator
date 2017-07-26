@@ -49,12 +49,16 @@ def main():
         if parsed_text:
             # get needed info
             to_info = retrievemail.parse_to_field(data['to'])
-            person_id = atdb.search_for_email(
-                settings.at_people_table,
-                (settings.people_table_key, to_info['email']),
-                ("First Name", to_info['fname']),
-                ("Last Name", to_info['lname'])
-                )
+            people = []
+            for person in to_info:
+                person_id = atdb.search_for_email(
+                    settings.at_people_table,
+                    (settings.people_table_key, person['email']),
+                    ("First Name", person['fname']),
+                    ("Last Name", person['lname'])
+                    )
+                people.append(person_id)
+
             # save any attachments
             attachments = retrievemail.save_attachments(mess, "/tmp/attach_down")
 
@@ -87,7 +91,7 @@ def main():
             atdb.create_task_record(
                 settings.at_tasks_table,
                 (settings.tasks_table_text, parsed_text),
-                (settings.tasks_table_person, person_id),
+                (settings.tasks_table_person, people),
                 notes_info,
                 file_info
                 )

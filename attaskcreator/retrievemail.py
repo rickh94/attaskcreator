@@ -94,11 +94,17 @@ def get_msg_text(mess):
     else:
         return mess.get_payload(None, True).decode('utf-8')
 
-def parse_to_field(email_to_field):
-    """Splits to field of an email to firstname, lastname, and email address
+def parse_to_field(full_to_field):
+    """Parses the info of all recipients of an email. Returns a list of dicts
+    of their info."""
+    to_list = full_to_field.split(',')
+    return list(map(parse_recipient, to_list))
+
+def parse_recipient(recipient):
+    """Splits to field of an email to fname, lname, and email address
     components and returns as a dict."""
     # split name from email
-    parsed = email.utils.parseaddr(email_to_field)
+    parsed = email.utils.parseaddr(recipient)
     # store email
     # parse name
     fname = ''

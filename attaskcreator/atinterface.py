@@ -73,21 +73,21 @@ class MyDatabase(Airtable):
         that field. Unspecified fields default to empty tuple.
         """
         text_field, text = text_fielddata
-        person_field, person_id = person_fielddata
+        person_field, people = person_fielddata
         # airtable requires record links to be in lists.
-        if not isinstance(person_id, list):
-            person_id = [person_id]
+        if not isinstance(people, list):
+            people = [people]
 
         # data for record
         data = {
             text_field: text,
-            person_field: person_id,
+            person_field: people,
         }
         # check optional parameters
         if notes_fielddata:
             notes_field, notes = notes_fielddata
             data[notes_field] = notes
-        #
+        # only attach files if argument is present
         if attach_fielddata:
             attach_field, attach_id = attach_fielddata
             if not isinstance(attach_id, list):
