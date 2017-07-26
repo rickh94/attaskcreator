@@ -14,7 +14,6 @@ def setattrs(_self, **kwargs):
         setattr(_self, k, v)
 
 
-# This should be reworked to read multiple files and return a dict.
 def get_settings():
     """Reads /etc/attaskcreator/attaskcreator.conf to configure needed options.
 
