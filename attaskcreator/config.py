@@ -1,4 +1,4 @@
-# config.py - get global settings for gmailtoairtable
+"""Configure attaskcreator."""
 import configparser
 import atexit
 import os
@@ -9,11 +9,17 @@ from attaskcreator.atinterface import MyDatabase
 
 
 def setattrs(_self, **kwargs):
+    """Quickly set multiple attributes from key value pairs)."""
     for k, v in kwargs.items():
         setattr(_self, k, v)
 
 
+# This should be reworked to read multiple files and return a dict.
 def get_settings():
+    """Reads /etc/attaskcreator/attaskcreator.conf to configure needed options.
+
+    Login options are stored, used to login, or exported to the environment.
+    """
     config = configparser.ConfigParser()
     config.read("/etc/attaskcreator/attaskcreator.conf")
 
@@ -62,10 +68,10 @@ def get_settings():
     os.environ['AWS_ACCESS_KEY_ID'] = config['AWS']['access key id']
     os.environ['AWS_SECRET_ACCESS_KEY'] = config['AWS']['secret access key']
 
-    # just in case, to prevent credential security issues
     atexit.register(unset_aws)
 
 
 def unset_aws():
+    """Unset AWS environment variables to prevent security issues."""
     os.environ['AWS_ACCESS_KEY_ID'] = ''
     os.environ['AWS_SECRET_ACCESS_KEY'] = ''

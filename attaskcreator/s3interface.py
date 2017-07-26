@@ -1,22 +1,19 @@
-#!/usr/bin/env python3
-# upload files to s3 for redownloading by airtable (feel like a dumbass but it
-# works)
-
-import boto3
+"""Interface to s3 for attaskcreator."""
 import os
+import boto3
 
 
 def make_url(filename, bucket):
-    s3 = boto3.client('s3')
+    """Upload a file to an s3 bucket and return a presigned url for that
+    file."""
+    s3client = boto3.client('s3')
     basename = os.path.basename(filename)
+    s3client.upload_file(filename, bucket, basename)
 
-    s3.upload_file(filename, bucket, basename)
-
-    url = s3.generate_presigned_url(
+    return s3client.generate_presigned_url(
         ClientMethod='get_object',
         Params={
             'Bucket': bucket,
             'Key': basename
         }
     )
-    return url

@@ -8,86 +8,95 @@ import re
 import smtplib
 import os
 import imaplib
+import datetime
 from html2text import html2text
 from nameparser import HumanName
-from . import settings
+from attaskcreator import settings
 
 
-class FetchMail():
+class FetchMail(imaplib.IMAP4_SSL):
+    """Class for getting email and associated methods."""
 
-    connection = None
-    error = None
+    def select_inbox(self, username, password):
+        """Select email from Inbox."""
+        self.login(username, password)
+        self.select('Inbox')
 
-    def __init__(self, mail_server, username, password):
-        self.connection = imaplib.IMAP4_SSL(mail_server)
-        self.connection.login(username, password)
-        self.connection.select('Inbox')
-
-    def fetch_unread_messages(self):
+    def fetch_unread_messages(self, username, password):
+        """Gets unread messages from Inbox."""
+        self.select_inbox(username, password)
         emails = []
-        (result, messages) = self.connection.search(None, 'UnSeen')
+        result, messages = self.search(None, 'UnSeen')
         if result == 'OK':
             for message in messages[0].split():
                 try:
-                    ret, data = self.connection.fetch(message, '(RFC822)')
-                except:
+                    _, data = self.fetch(message, '(RFC822)')
+                except Exception:
                     print("No new emails to read.")
-                    self.close_connection()
+                    self.close()
                     exit()
                 msg = email.message_from_bytes(data[0][1])
-                if isinstance(msg, str) == False:
+                if not isinstance(msg, str):
                     emails.append(msg)
 
             return emails
 
-        self.error = "Failed to retreive emails."
         return emails
 
-    def save_attachments(self, msg, download_folder="/tmp"):
-        if not os.path.exists(download_folder):
-            try:
-                os.makedirs(download_folder)
-            except PermissionError:
-                download_folder = "/tmp"
 
-        paths = []
-        for part in msg.walk():
-            if part.get_content_maintype() == 'multipart':
-                continue
-            if part.get('Content-Disposition') is None:
-                continue
+def save_attachments(msg, download_dir="/tmp"):
+    """Save attachments out of an email message to a given folder and return
+    list of paths to downloaded files.
 
-            filename = part.get_filename()
-            att_path = os.path.join(download_folder, filename)
+    Optionally a download directory can be specified and will be created if it
+    does not already exist. If it cannot be written to, /tmp will be used
+    instead. The date/time at runtime will be appended to the filename to
+    prevent accidental overwriting.
+    """
+    if not os.path.exists(download_dir):
+        try:
+            os.makedirs(download_dir)
+        except PermissionError:
+            download_folder = "/tmp"
 
-            if not os.path.isfile(att_path):
-                fp = open(att_path, 'wb')
-                fp.write(part.get_payload(decode=True))
-                fp.close()
+    paths = []
+    for part in msg.walk():
+        if part.get_content_maintype() == 'multipart':
+            continue
+        if part.get('Content-Disposition') is None:
+            continue
 
-            paths.append(att_path)
+        # adds current time to the file to prevent accidental overwriting of files
+        filename = part.get_filename() + 'T' + str(datetime.datetime.today())
+        att_path = os.path.join(download_folder, filename)
+        with open(att_path, 'wb') as thisfile:
+            thisfile.write(part.get_payload(decode=True))
 
-        return paths
+        paths.append(att_path)
 
-    def read_info(self, msg):
-        return {
-            'from': msg['from'],
-            'to': msg['to'],
-            'subject': msg['subject'],
-            'date': msg['date'],
-            'body': html2text(self.get_text(msg)),
-        }
+    return paths
 
-    def get_text(self, mess):
-        if mess.is_multipart():
-            return self.get_text(mess.get_payload(0))
-        else:
-            return mess.get_payload(None, True).decode('utf-8')
+def read_msg_info(msg):
+    """Reads/decodes the message info needed for attaskcreator and returns it
+    as a dict."""
+    return {
+        'from': msg['from'],
+        'to': msg['to'],
+        'subject': msg['subject'],
+        'date': msg['date'],
+        'body': html2text(get_msg_text(msg)),
+    }
 
-
-
+def get_msg_text(mess):
+    """Finds the text body of a message and returns it."""
+    if mess.is_multipart():
+        return get_msg_text(mess.get_payload(0))
+    else:
+        return mess.get_payload(None, True).decode('utf-8')
 
 def parse_to_field(email_to_field):
+    """Splits to field of an email to firstname, lastname, and email address
+    components and returns as a dict."""
     # split name from email
     parsed = email.utils.parseaddr(email_to_field)
     # store email
@@ -106,29 +115,26 @@ def parse_to_field(email_to_field):
         'email': email_addr,
     }
 
+def sendmsg(smtp_server, login_info, from_info, to_info, message):
+    """This basically wraps smtplib.SMTP.sendmail to configure a few options
+    more cleanly.
 
-def markread(eml, num):
-    eml.store(num, '+FLAGS', '\Seen')
-
-
-def markunread(eml, num):
-    eml.store(num, '-FLAGS', '\Seen')
-
-
-def closemail(eml):
-    eml.close()
-
-
-def sendmsg(subject, body):
-    from_eml = email.utils.formataddr(
-        ("Airtable Task Creator", settings.eml_username)
-    )
-    to_eml = settings.eml_error
+    smtp_server is a tuple of the url and port for an smtp server
+    login_info is a tuple of a matching username and password
+    from_info and to_info are tuples of a name and email address to send from
+    and to.
+    message is a tuple of subject and body text.
+    """
+    from_eml = email.utils.formataddr(from_info)
+    to_eml = email.utils.formataddr(to_info)
+    url, port = smtp_server
+    eml, pwd = login_info
+    subject, body = message
 
     # login to server
-    server = smtplib.SMTP(settings.eml_smtp_server, 587)
+    server = smtplib.SMTP(url, port)
     server.starttls()
-    server.login(settings.eml_username, settings.eml_pwd)
+    server.login(eml, pwd)
 
     # assemble message
     msg = MIMEMultipart()

@@ -10,12 +10,17 @@ from attaskcreator import retrievemail
 # from attaskcreator import atinterface
 from attaskcreator import s3interface
 
-def parse_email_message(text_to_search):
-    trigger_phrase = re.escape(settings.trigger_phrase)
-    term_char = re.escape(settings.term_char)
+def parse_email_message(params, text_to_search):
+    """Returns text found between a prefix and terminating character or None
+    if it is not found.
+
+    params: tuple of prefix phrase and terminating character.
+    text_to_search: self-explanatory.
+    """
+    trigger_phrase, term_char = params
     regex = re.compile(r'({} )([^{}]*)'.format(trigger_phrase, term_char),
-            re.IGNORECASE
-            )
+                       re.IGNORECASE
+                      )
     found_text = regex.search(text_to_search)
     try:
         return found_text.group(2)
@@ -24,21 +29,23 @@ def parse_email_message(text_to_search):
 
 
 def main():
+    """Main function for attaskcreator."""
     # get settings and email
     get_settings()
     mail = retrievemail.FetchMail(
-            settings.eml_imap_server, 
-            settings.eml_username,
-            settings.eml_pwd
-            )
-    messages = mail.fetch_unread_messages()
+        settings.eml_imap_server
+        )
+    messages = mail.fetch_unread_messages(settings.eml_username,
+                                          settings.eml_pwd)
     atdb = settings.database
 
     # loop through email messages
     for mess in messages:
-        data = mail.read_info(mess)
+        data = retrievemail.read_msg_info(mess)
 
-        parsed_text = parse_email_message(data['body'])
+        parsed_text = parse_email_message(
+            (settings.trigger_phrase, settings.term_char), data['body']
+            )
         if parsed_text:
             # get needed info
             to_info = retrievemail.parse_to_field(data['to'])
@@ -49,7 +56,7 @@ def main():
                 ("Last Name", to_info['lname'])
                 )
             # save any attachments
-            attachments = mail.save_attachments(mess, "/tmp/attach_down")
+            attachments = retrievemail.save_attachments(mess, "/tmp/attach_down")
 
             # if there are attachments, upload them to s3 and send urls to
             # airtable.
@@ -86,13 +93,20 @@ def main():
                 )
         else:
             subject = 'Failed to create airtable task record'
-            body = 'The trigger phrase was not found in your email to ' + \
-                    mess['to'] + \
-                    ', so a record was not created. The body of the email '+ \
-                    'is below:\n\n' + \
-                    'Subject: {}'.format(mess['subject']) +\
-                    '\n' + mess['body']
-            retrievemail.sendmsg(subject, body)
+            body = ('The trigger phrase was not found in your email to'
+                    + mess['to']
+                    + ', so a record was not created. The body of the email'
+                    + 'is below:\n\n'
+                    + 'Subject: {}\n'.format(mess['subject'])
+                    + mess['body']
+                   )
+            retrievemail.sendmsg(
+                (settings.eml_smtp_server, 587),
+                (settings.eml_username, settings.eml_pwd),
+                ('Airtable Task Creator', settings.eml_username),
+                ('User', settings.eml_error),
+                (subject, body)
+                )
 
 
 if __name__ == "__main__":
