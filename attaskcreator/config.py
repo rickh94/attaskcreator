@@ -20,53 +20,60 @@ def get_settings():
 
     Login options are stored, used to login, or exported to the environment.
     """
-    config = configparser.ConfigParser()
-    config.read("/etc/attaskcreator/attaskcreator.conf")
+    login = configparser.ConfigParser()
+    login.read("/etc/attaskcreator/login.conf")
+    tables = configparser.ConfigParser()
+    tables.read("/etc/attaskcreator/tables.conf")
+    with open("/etc/attaskcreator/phrases.conf", "r") as f:
+        phrases = f.readlines()
+
+    # strip whitespace and newlines
+    phrases = list(map(lambda x: x.strip(), phrases))
 
     # make airtable object
     atdb = MyDatabase(
-        config['Airtable']['database id'],
-        config['Airtable']['api key']
+        login['Airtable']['database id'],
+        login['Airtable']['api key']
     )
 
     setattrs(settings,
              # email config
-             eml_username=config['Email']['user'],
-             eml_pwd=config['Email']['password'],
-             eml_imap_server=config['Email']['imap url'],
-             eml_smtp_server=config['Email']['smtp url'],
-             eml_error=config['Email']['error email'],
+             eml_username=login['Email']['user'],
+             eml_pwd=login['Email']['password'],
+             eml_imap_server=login['Email']['imap url'],
+             eml_smtp_server=login['Email']['smtp url'],
+             eml_error=login['Email']['error email'],
 
              # database config
              database=atdb,
 
              # temporary bucket
-             bucket=config['AWS']['bucket'],
+             bucket=login['AWS']['bucket'],
 
              # tasks table
-             at_tasks_table=config['Tasks Table']['name'],
-             tasks_table_person=config['Tasks Table']['people link field'],
-             tasks_table_text=config['Tasks Table']['text field'],
-             tasks_table_notes=config['Tasks Table']['notes field'],
-             tasks_table_attach=config['Tasks Table']['attachment link field'],
+             at_tasks_table=tables['Tasks Table']['name'],
+             tasks_table_person=tables['Tasks Table']['people link field'],
+             tasks_table_text=tables['Tasks Table']['text field'],
+             tasks_table_notes=tables['Tasks Table']['notes field'],
+             tasks_table_attach=tables['Tasks Table']['attachment link field'],
 
              # people table
-             at_people_table=config['People Table']['name'],
-             people_table_key=config['People Table']['email field'],
+             at_people_table=tables['People Table']['name'],
+             people_table_key=tables['People Table']['email field'],
 
              # files table
-             at_files_table=config['Files Table']['name'],
-             files_table_name_field=config['Files Table']['key field'],
-             files_table_attach_field=config['Files Table']['Attachment Field'],
+             at_files_table=tables['Files Table']['name'],
+             files_table_name_field=tables['Files Table']['key field'],
+             files_table_attach_field=tables['Files Table']['Attachment Field'],
 
              # text parsing config
-             trigger_phrase=config['Parse']['trigger phrase'],
-             term_char=config['Parse']['termination character'],
+             trigger_phrases=phrases,
+             term_char=tables['Parse']['termination character'],
             )
 
     # set environment variables for aws
-    os.environ['AWS_ACCESS_KEY_ID'] = config['AWS']['access key id']
-    os.environ['AWS_SECRET_ACCESS_KEY'] = config['AWS']['secret access key']
+    os.environ['AWS_ACCESS_KEY_ID'] = login['AWS']['access key id']
+    os.environ['AWS_SECRET_ACCESS_KEY'] = login['AWS']['secret access key']
 
     atexit.register(unset_aws)
 

@@ -10,6 +10,13 @@ from attaskcreator import retrievemail
 # from attaskcreator import atinterface
 from attaskcreator import s3interface
 
+def choose_phrase(phrases, text):
+    """Chooses the first phrase from a list of phrases that is found in the
+    given text."""
+    for phrase in phrases:
+        if phrase.lower() in text.lower():
+            return phrase
+
 def parse_email_message(params, text_to_search):
     """Returns text found between a prefix and terminating character or None
     if it is not found.
@@ -17,7 +24,8 @@ def parse_email_message(params, text_to_search):
     params: tuple of prefix phrase and terminating character.
     text_to_search: self-explanatory.
     """
-    trigger_phrase, term_char = params
+    phrases, term_char = params
+    trigger_phrase = choose_phrase(phrases, text_to_search)
     regex = re.compile(r'({} )([^{}]*)'.format(trigger_phrase, term_char),
                        re.IGNORECASE
                       )
@@ -44,7 +52,7 @@ def main():
         data = retrievemail.read_msg_info(mess)
 
         parsed_text = parse_email_message(
-            (settings.trigger_phrase, settings.term_char), data['body']
+            (settings.trigger_phrases, settings.term_char), data['body']
             )
         if parsed_text:
             # get needed info
@@ -98,11 +106,11 @@ def main():
         else:
             subject = 'Failed to create airtable task record'
             body = ('The trigger phrase was not found in your email to'
-                    + mess['to']
+                    + data['to']
                     + ', so a record was not created. The body of the email'
                     + 'is below:\n\n'
-                    + 'Subject: {}\n'.format(mess['subject'])
-                    + mess['body']
+                    + 'Subject: {}\n'.format(data['subject'])
+                    + data['body']
                    )
             retrievemail.sendmsg(
                 (settings.eml_smtp_server, 587),
