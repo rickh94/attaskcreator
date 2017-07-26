@@ -1,21 +1,21 @@
-from setuptools import setup, find_packages
 from codecs import open
 from os import path
 from subprocess import run
+from setuptools import setup, find_packages
 
-here = path.abspath(path.dirname(__file__))
-vers = '0.3.1'
-desc = 'Script to create task records in airtable from parsed emails'
+HERE = path.abspath(path.dirname(__file__))
+VERS = '0.3.2'
+DESC = 'Script to create task records in airtable from parsed emails'
 
-with open(path.join(here, 'README.md'), encoding='utf-8') as f:
-    long_description = f.read()
+with open(path.join(HERE, 'README.md'), encoding='utf-8') as f:
+    LONG_DESCRIPTION = f.read()
 
 setup(
     name='attaskcreator',
-    version=vers,
+    version=VERS,
 
-    description=desc,
-    long_description=long_description,
+    description=DESC,
+    long_description=LONG_DESCRIPTION,
 
     url='https://github.com/rickh94/attaskcreator.git',
     author='Rick Henry',
@@ -27,12 +27,12 @@ setup(
     packages=find_packages(),
 
     install_requires=[
-                    'requests',
-                    'airtable',
-                    'html2text',
-                    'nameparser',
-                    'boto3'
-                ],
+        'requests',
+        'airtable',
+        'html2text',
+        'nameparser',
+        'boto3'
+        ],
 
     entry_points={
         'console_scripts': [
