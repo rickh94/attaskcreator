@@ -16,6 +16,7 @@ def choose_phrase(phrases, text):
     for phrase in phrases:
         if phrase.lower() in text.lower():
             return phrase
+    return None
 
 def parse_email_message(params, text_to_search):
     """Returns text found between a prefix and terminating character or None
@@ -26,14 +27,18 @@ def parse_email_message(params, text_to_search):
     """
     phrases, term_char = params
     trigger_phrase = choose_phrase(phrases, text_to_search)
-    regex = re.compile(r'({} )([^{}]*)'.format(trigger_phrase, term_char),
-                       re.IGNORECASE
-                      )
-    found_text = regex.search(text_to_search)
-    try:
-        return found_text.group(2)
-    except AttributeError:
-        return None
+    if trigger_phrase is not None:
+        regex = re.compile(r'({} )([^{}]*)'.format(trigger_phrase, term_char),
+                           re.IGNORECASE
+                          )
+        found_text = regex.search(text_to_search)
+        try:
+            return found_text.group(2)
+        except AttributeError:
+            # return none if nothing was found (unlikely because of flow control
+            return None
+    # return None if no trigger phrase wasn't found
+    return None
 
 
 def main():
