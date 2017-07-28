@@ -1,6 +1,5 @@
 # retrieve_mail.py - get and process email for gmailtoairtable
 import email
-# import email.utils
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import time
@@ -14,6 +13,7 @@ from nameparser import HumanName
 from attaskcreator import settings
 
 
+# this is going to be a pain to test.
 class FetchMail(imaplib.IMAP4_SSL):
     """Class for getting email and associated methods."""
 
@@ -92,8 +92,7 @@ def get_msg_text(mess):
     """Finds the text body of a message and returns it."""
     if mess.is_multipart():
         return get_msg_text(mess.get_payload(0))
-    else:
-        return mess.get_payload(None, True).decode('utf-8')
+    return mess.get_payload(None, True).decode('utf-8')
 
 def parse_to_field(full_to_field):
     """Parses the info of all recipients of an email. Returns a list of dicts
@@ -122,6 +121,7 @@ def parse_recipient(recipient):
         'email': email_addr,
     }
 
+# this test needs to be written. mock a bunch of stuff
 def sendmsg(smtp_server, login_info, from_info, to_info, message):
     """This basically wraps smtplib.SMTP.sendmail to configure a few options
     more cleanly.
