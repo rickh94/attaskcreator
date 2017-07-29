@@ -17,3 +17,4 @@ dist
 __pycache__
 scratch
 venv
+*.egg-info

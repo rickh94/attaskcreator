@@ -66,8 +66,9 @@ def save_attachments(msg, download_dir="/tmp"):
         if part.get('Content-Disposition') is None:
             continue
 
-        # adds current time to the file to prevent accidental overwriting of files
-        filename = part.get_filename() + 'T' + str(datetime.datetime.today())
+        # adds current time to the file to prevent accidental overwritine of files
+        app_date = datetime.datetime.today()
+        filename = app_date.strftime("%Y-%m-%d-") + part.get_filename()
         att_path = os.path.join(download_dir, filename)
         with open(att_path, 'wb') as thisfile:
             thisfile.write(part.get_payload(decode=True))
