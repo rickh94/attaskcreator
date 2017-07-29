@@ -33,6 +33,7 @@ class TestParseText(unittest.TestCase):
 
     @mock.patch('attaskcreator.create.choose_phrase')
     def test_parse_message(self, mock_choose_phrase):
+        """Test for parse email message."""
         mock_choose_phrase.return_value = 'Can you please'
         self.assertEqual(
             create.parse_email_message(
