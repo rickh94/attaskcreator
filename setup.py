@@ -4,7 +4,7 @@ from subprocess import run
 from setuptools import setup, find_packages
 
 HERE = path.abspath(path.dirname(__file__))
-VERS = '0.4.0'
+VERS = '0.4.1'
 DESC = 'Script to create task records in airtable from parsed emails'
 
 with open(path.join(HERE, 'README.md'), encoding='utf-8') as f:
