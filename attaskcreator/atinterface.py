@@ -27,18 +27,18 @@ class MyDatabase(Airtable):
         rec_id = self.search_for_rec(table_name, eml_field, eml_addr)
         if rec_id is not None:
             return rec_id
-        else:
-            # create new record if none found
-            data = {
-                eml_field: eml_addr,
-                fname_field: fname,
-                lname_field: lname,
-            }
 
-            self.create(table_name, data)
+        # create new record if none found
+        data = {
+            eml_field: eml_addr,
+            fname_field: fname,
+            lname_field: lname,
+        }
 
-            # get id for newly created record
-            return self.search_for_rec(table_name, eml_field, eml_addr)
+        self.create(table_name, data)
+
+        # get id for newly created record
+        return self.search_for_rec(table_name, eml_field, eml_addr)
 
 
     def search_for_rec(self, table, field, term):
