@@ -41,7 +41,7 @@ class FetchMail(imaplib.IMAP4_SSL):
 
             return emails
 
-        return emails
+        return None
 
 
 def save_attachments(msg, download_dir="/tmp"):

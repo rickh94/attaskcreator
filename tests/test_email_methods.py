@@ -25,21 +25,55 @@ RECIP_DICTS = [
 
 HERE = os.path.dirname(__file__)
 
-with open(os.path.join(HERE, 'testeml'), 'br') as e:
-    TEST_MSG = email.message_from_bytes(e.read())
 
 class TestEmailMethods(unittest.TestCase):
     """Tests for parse_to_field."""
 
-    def setUp(self):
-        pass
+    @mock.patch.object(retrievemail.FetchMail, '__init__')
+    def setUp(self, mock_init):
+        """setup TestEmailMethods."""
+        mock_init.return_value = None
+        self.testmail = retrievemail.FetchMail('test.example.com')
+        with open(os.path.join(HERE, 'testeml'), 'br') as e:
+            self.testmsg = email.message_from_bytes(e.read())
+
+
+    @mock.patch.object(retrievemail.FetchMail, 'select')
+    @mock.patch.object(retrievemail.FetchMail, 'login')
+    def test_select_inbox(self, mock_login, mock_select):
+        self.testmail.select_inbox('testuser', 'password')
+        mock_login.assert_called_once_with('testuser', 'password')
+        mock_select.assert_called_once_with('Inbox')
+
+    @mock.patch.object(retrievemail.email, 'message_from_bytes')
+    @mock.patch.object(retrievemail.FetchMail, 'close')
+    @mock.patch.object(retrievemail.FetchMail, 'fetch')
+    @mock.patch.object(retrievemail.FetchMail, 'search')
+    @mock.patch.object(retrievemail.FetchMail, 'select_inbox')
+    def test_fetch_unread_messages(self, mock_select_inbox, mock_search,
+            mock_fetch, mock_close, mock_message_from_bytes):
+        # return one message
+        mock_search.return_value = ('OK', [b'1'])
+        mock_fetch.return_value = ('OK', [['', 'testmsg']])
+        mock_message_from_bytes.return_value = self.testmsg
+        self.assertEqual(
+            self.testmail.fetch_unread_messages('testuser', 'password'),
+            [self.testmsg]
+            )
+        mock_select_inbox.assert_called_once_with('testuser', 'password')
+        mock_search.assert_called_once_with(None, 'UnSeen')
+        mock_fetch.assert_called_once_with(b'1', '(RFC822)')
+        mock_message_from_bytes.assert_called_once_with('testmsg')
+
+
 
     def test_parse_recip(self):
         """Test case for parse_recipient."""
         for num, recip in enumerate(RECIPS):
-            self.assertDictEqual(
-                retrievemail.parse_recipient(recip),
-                RECIP_DICTS[num])
+            with self.subTest(num=num, recip=recip):
+                self.assertDictEqual(
+                    retrievemail.parse_recipient(recip),
+                    RECIP_DICTS[num])
 
     def test_parse_to(self):
         """Test case for parse_to_field."""
@@ -49,7 +83,7 @@ class TestEmailMethods(unittest.TestCase):
         """Test saving attachments from an email message."""
         m = mock.mock_open()
         with mock.patch('builtins.open', m, create=True):
-            paths = retrievemail.save_attachments(TEST_MSG)
+            paths = retrievemail.save_attachments(self.testmsg)
         date = datetime.today().strftime("%Y-%m-%d-")
         #
         filename1 = date + 'atinterface.py'
@@ -63,10 +97,9 @@ class TestEmailMethods(unittest.TestCase):
     def test_get_msg_text(self):
         """Test getting message content."""
         self.assertRegex(
-            retrievemail.get_msg_text(TEST_MSG),
+            retrievemail.get_msg_text(self.testmsg),
             r'.*?This is a test email\..*?')
 
-    # don't want to bother calling these. tested elsewhere.
     @mock.patch('attaskcreator.retrievemail.get_msg_text')
     @mock.patch('attaskcreator.retrievemail.html2text')
     def test_read_msg_info(self, mock_html2text, mock_get_msg):

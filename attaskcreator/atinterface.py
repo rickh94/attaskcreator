@@ -13,6 +13,26 @@ class MyDatabase(Airtable):
     easily.
     """
 
+    def search_for_rec(self, table, field, term):
+        """Searches for a record in an airtable database table and returns its
+        'id' if found and None if it is not found.
+
+        The search is performed in a specified field for a specified term.
+        """
+        table = self.get(table)
+        for rec in table['records']:
+            curr_id = rec['id']
+            try:
+                if term in rec['fields'][field]:
+                    # return if search term is found
+                    return curr_id
+            # deal with json's lack of normalization
+            except KeyError:
+                continue
+
+        return None
+
+
     def search_for_email(self, table_name, eml_fielddata, fname_fielddata,
                          lname_fielddata):
         """Searches for an email address in a airtable database table and creates a record if it is
@@ -39,26 +59,6 @@ class MyDatabase(Airtable):
 
         # get id for newly created record
         return self.search_for_rec(table_name, eml_field, eml_addr)
-
-
-    def search_for_rec(self, table, field, term):
-        """Searches for a record in an airtable database table and returns its
-        'id' if found and None if it is not found.
-
-        The search is performed in a specified field for a specified term.
-        """
-        table = self.get(table)
-        for rec in table['records']:
-            curr_id = rec['id']
-            try:
-                if term in rec['fields'][field]:
-                    # return if search term is found
-                    return curr_id
-            # if key is missing entirely, skip to next record
-            except KeyError:
-                continue
-
-        return None
 
 
     def create_task_record(self, table_name, text_fielddata, person_fielddata,
@@ -115,6 +115,7 @@ class MyDatabase(Airtable):
         all_urls = []
 
         # format urls for airtable to parse
+        # TODO: change to list comprehension
         for url in urls:
             all_urls.append({"url": url})
 
