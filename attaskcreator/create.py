@@ -3,6 +3,7 @@
 import json
 import re
 import datetime
+from smtplib import SMTP
 from attaskcreator import settings
 from attaskcreator.config import setattrs
 from attaskcreator.config import get_settings
@@ -118,7 +119,7 @@ def main():
                     + data['body']
                    )
             retrievemail.sendmsg(
-                (settings.eml_smtp_server, 587),
+                SMTP(settings.eml_smtp_server, 587),
                 (settings.eml_username, settings.eml_pwd),
                 ('Airtable Task Creator', settings.eml_username),
                 ('User', settings.eml_error),

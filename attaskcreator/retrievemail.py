@@ -77,6 +77,14 @@ def save_attachments(msg, download_dir="/tmp"):
 
     return paths
 
+
+def get_msg_text(mess):
+    """Finds the text body of a message and returns it."""
+    if mess.is_multipart():
+        return get_msg_text(mess.get_payload(0))
+    return mess.get_payload(None, True).decode('utf-8')
+
+
 def read_msg_info(msg):
     """Reads/decodes the message info needed for attaskcreator and returns it
     as a dict."""
@@ -88,17 +96,13 @@ def read_msg_info(msg):
         'body': html2text(get_msg_text(msg)),
     }
 
-def get_msg_text(mess):
-    """Finds the text body of a message and returns it."""
-    if mess.is_multipart():
-        return get_msg_text(mess.get_payload(0))
-    return mess.get_payload(None, True).decode('utf-8')
 
 def parse_to_field(full_to_field):
     """Parses the info of all recipients of an email. Returns a list of dicts
     of their info."""
     to_list = full_to_field.split(',')
     return list(map(parse_recipient, to_list))
+
 
 def parse_recipient(recipient):
     """Splits to field of an email to fname, lname, and email address
@@ -122,11 +126,11 @@ def parse_recipient(recipient):
     }
 
 # this test needs to be written. mock a bunch of stuff
-def sendmsg(smtp_server, login_info, from_info, to_info, message):
+def sendmsg(server, login_info, from_info, to_info, message):
     """This basically wraps smtplib.SMTP.sendmail to configure a few options
     more cleanly.
 
-    smtp_server is a tuple of the url and port for an smtp server
+    server is an smtp server object
     login_info is a tuple of a matching username and password
     from_info and to_info are tuples of a name and email address to send from
     and to.
@@ -134,12 +138,10 @@ def sendmsg(smtp_server, login_info, from_info, to_info, message):
     """
     from_eml = email.utils.formataddr(from_info)
     to_eml = email.utils.formataddr(to_info)
-    url, port = smtp_server
     eml, pwd = login_info
     subject, body = message
 
     # login to server
-    server = smtplib.SMTP(url, port)
     server.starttls()
     server.login(eml, pwd)
 

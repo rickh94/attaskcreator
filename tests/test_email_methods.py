@@ -6,44 +6,44 @@ import email
 import os
 from attaskcreator import retrievemail
 
-# useful constants
-RECIPS = [
-    "John Smith <johnsmith@example.com>",
-    "Barack Obama <bobama@whitehouse.gov>",
-    "Cory Booker <cbooker@senate.gov>",
-    "<admin@google.com>",
-    "Bill Clinton <bclinton@whitehouse.gov>",
-    ]
-
-RECIP_DICTS = [
-    {'fname': 'John', 'lname': 'Smith', 'email': 'johnsmith@example.com'},
-    {'fname': 'Barack', 'lname': 'Obama', 'email': 'bobama@whitehouse.gov'},
-    {'fname': 'Cory', 'lname': 'Booker', 'email': 'cbooker@senate.gov'},
-    {'fname': '', 'lname': '', 'email': 'admin@google.com'},
-    {'fname': 'Bill', 'lname': 'Clinton', 'email': 'bclinton@whitehouse.gov'},
-    ]
-
 HERE = os.path.dirname(__file__)
 
 
 class TestEmailMethods(unittest.TestCase):
     """Tests for parse_to_field."""
 
-    @mock.patch.object(retrievemail.FetchMail, '__init__')
-    def setUp(self, mock_init):
+    def setUp(self):
         """setup TestEmailMethods."""
-        mock_init.return_value = None
-        self.testmail = retrievemail.FetchMail('test.example.com')
+        with mock.patch.object(retrievemail.FetchMail, '__init__')\
+            as mock_init:
+            mock_init.return_value = None
+            self.testmail = retrievemail.FetchMail('test.example.com')
         with open(os.path.join(HERE, 'testeml'), 'br') as e:
             self.testmsg = email.message_from_bytes(e.read())
+        self.recips = [
+            "John Smith <johnsmith@example.com>",
+            "Barack Obama <bobama@whitehouse.gov>",
+            "Cory Booker <cbooker@senate.gov>",
+            "<admin@google.com>",
+            "Bill Clinton <bclinton@whitehouse.gov>",
+            ]
+        self.recip_dicts = [
+            {'fname': 'John', 'lname': 'Smith', 'email': 'johnsmith@example.com'},
+            {'fname': 'Barack', 'lname': 'Obama', 'email': 'bobama@whitehouse.gov'},
+            {'fname': 'Cory', 'lname': 'Booker', 'email': 'cbooker@senate.gov'},
+            {'fname': '', 'lname': '', 'email': 'admin@google.com'},
+            {'fname': 'Bill', 'lname': 'Clinton', 'email': 'bclinton@whitehouse.gov'},
+            ]
 
 
     @mock.patch.object(retrievemail.FetchMail, 'select')
     @mock.patch.object(retrievemail.FetchMail, 'login')
     def test_select_inbox(self, mock_login, mock_select):
+        """test selecting the inbox automatically"""
         self.testmail.select_inbox('testuser', 'password')
         mock_login.assert_called_once_with('testuser', 'password')
         mock_select.assert_called_once_with('Inbox')
+
 
     @mock.patch.object(retrievemail.email, 'message_from_bytes')
     @mock.patch.object(retrievemail.FetchMail, 'close')
@@ -51,7 +51,8 @@ class TestEmailMethods(unittest.TestCase):
     @mock.patch.object(retrievemail.FetchMail, 'search')
     @mock.patch.object(retrievemail.FetchMail, 'select_inbox')
     def test_fetch_unread_messages(self, mock_select_inbox, mock_search,
-            mock_fetch, mock_close, mock_message_from_bytes):
+                                   mock_fetch, mock_close, mock_message_from_bytes):
+        """Test fetching unread messages"""
         # return one message
         mock_search.return_value = ('OK', [b'1'])
         mock_fetch.return_value = ('OK', [['', 'testmsg']])
@@ -66,26 +67,13 @@ class TestEmailMethods(unittest.TestCase):
         mock_message_from_bytes.assert_called_once_with('testmsg')
 
 
-
-    def test_parse_recip(self):
-        """Test case for parse_recipient."""
-        for num, recip in enumerate(RECIPS):
-            with self.subTest(num=num, recip=recip):
-                self.assertDictEqual(
-                    retrievemail.parse_recipient(recip),
-                    RECIP_DICTS[num])
-
-    def test_parse_to(self):
-        """Test case for parse_to_field."""
-        self.assertListEqual(retrievemail.parse_to_field(', '.join(RECIPS)), RECIP_DICTS)
-
     def test_save_attach(self):
         """Test saving attachments from an email message."""
         m = mock.mock_open()
         with mock.patch('builtins.open', m, create=True):
             paths = retrievemail.save_attachments(self.testmsg)
         date = datetime.today().strftime("%Y-%m-%d-")
-        #
+
         filename1 = date + 'atinterface.py'
         filename2 = date + 'README.md'
         filepath1 = os.path.join('/tmp', filename1)
@@ -94,11 +82,13 @@ class TestEmailMethods(unittest.TestCase):
         m.assert_any_call(filepath2, 'wb')
         self.assertListEqual([filepath1, filepath2], paths)
 
+
     def test_get_msg_text(self):
         """Test getting message content."""
         self.assertRegex(
             retrievemail.get_msg_text(self.testmsg),
             r'.*?This is a test email\..*?')
+
 
     @mock.patch('attaskcreator.retrievemail.get_msg_text')
     @mock.patch('attaskcreator.retrievemail.html2text')
@@ -116,3 +106,36 @@ class TestEmailMethods(unittest.TestCase):
         # assert method calls
         mock_get_msg.assert_called_once_with(testmsg)
         assert mock_html2text.called
+
+
+    def test_parse_to(self):
+        """Test case for parse_to_field."""
+        self.assertListEqual(retrievemail.parse_to_field(', '.join(self.recips)),
+                             self.recip_dicts)
+
+
+    def test_parse_recip(self):
+        """Test case for parse_recipient."""
+        for num, recip in enumerate(self.recips):
+            with self.subTest(num=num, recip=recip):
+                self.assertDictEqual(retrievemail.parse_recipient(recip),
+                                     self.recip_dicts[num])
+
+
+    @mock.patch('attaskcreator.retrievemail.smtplib.SMTP')
+    def test_send_msg(self, mock_smtp):
+        retrievemail.sendmsg(
+            mock_smtp,
+            ('test', 'password'),
+            ('Barack Obama', 'bobama@whitehouse.gov'),
+            ('Joe Biden', 'jbiden@whitehouse.gov'),
+            ('Hey Joe',
+             "Isn't it relaxing not to be governing anymore?")
+            )
+        mock_smtp.login.assert_called_once_with('test', 'password')
+        mock_smtp.sendmail.assert_called_once_with(
+            "Barack Obama <bobama@whitehouse.gov>",
+            "Joe Biden <jbiden@whitehouse.gov>",
+            # i would prefer to pass an actual object but the unique ids make
+            # that really annoying.
+            mock.ANY)
