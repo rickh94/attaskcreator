@@ -1,6 +1,6 @@
 # Airtable Task Creator
 
-https://travis-ci.org/rickh94/attaskcreator.svg?branch=master
+![build status](https://travis-ci.org/rickh94/attaskcreator.svg?branch=master)
 
 Creates entries in an Airtable 'Tasks' table linked to people in a people
 table from emails sent to those people (and copied to a burner email account).
