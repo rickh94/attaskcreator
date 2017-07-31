@@ -1,0 +1,5 @@
+requests
+airtable
+html2text
+nameparser
+boto3
