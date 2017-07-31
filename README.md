@@ -1,4 +1,7 @@
 # Airtable Task Creator
+
+https://travis-ci.org/rickh94/attaskcreator.svg?branch=master
+
 Creates entries in an Airtable 'Tasks' table linked to people in a people
 table from emails sent to those people (and copied to a burner email account).
 If the email address is not in the table, a new record will be created for
@@ -15,7 +18,6 @@ You can install with some options to get some extras
 | -p INSTALL_PREFIX, --install-prefix INSTALL_PREFIX | Specify alternate installation prefix|
 | -s, --install-units | Install systemd service and timer from [extras](extras) |
 | -c CONFIG_FILE, --config-file CONFIG_FILE | Specify a configuration file |
-| --make-config | Interactively generate config file |
 
 ## Usage
 This is most useful when automated in some way. Systemd units are included.
@@ -23,8 +25,11 @@ All options are in the configuration file so simply run the script
 periodically.
 
 ## Configuration
+__TO BE UPDATED: config now lives in login.conf, tables.conf, and
+phrases.conf__
+
 An example configuration file is included. The can be copied and modified and installed
-with -c, or one created interactively with --make-config. The example will be copied 
+with -c. The example will be copied 
 to `/etc/attaskcreator` for future reference.
 Fields are as follows:
 
@@ -105,9 +110,11 @@ __Attachment Field:__ The field where the actual attachments will be uploaded.
 
 [Parse]
 
+
+__Termination Character:__ see above.
+
+__phrases.conf__
 __Trigger Phrase:__ This is the prefix to the text that will be grabbed from
 the email. Everything after this will be grabbed for the __Text Field__ in the
 Tasks Table up to the __Termination Character__.
-
-__Termination Character:__ see above.
 
