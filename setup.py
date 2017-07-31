@@ -1,6 +1,5 @@
 from codecs import open
 from os import path
-from subprocess import run
 from setuptools import setup, find_packages
 
 HERE = path.abspath(path.dirname(__file__))
