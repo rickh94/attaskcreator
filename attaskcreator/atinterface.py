@@ -112,18 +112,12 @@ class MyDatabase(Airtable):
         if not isinstance(urls, list):
             urls = [urls]
 
-        all_urls = []
-
         # format urls for airtable to parse
-        # TODO: change to list comprehension
-        for url in urls:
-            all_urls.append({"url": url})
-
+        all_urls = [{"url": url} for url in urls]
         data = {
             name_field: name,
             attach_field: all_urls,
         }
-
         self.create(table_name, data)
 
         # return new rec id
