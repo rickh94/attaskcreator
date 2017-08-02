@@ -2,15 +2,15 @@
 import email
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-import time
-import re
-import smtplib
+# import time
+# import re
+# import smtplib
 import os
 import imaplib
 import datetime
 from html2text import html2text
 from nameparser import HumanName
-from attaskcreator import settings
+# from attaskcreator import settings
 
 
 # this is going to be a pain to test.
@@ -35,9 +35,9 @@ class FetchMail(imaplib.IMAP4_SSL):
                     print("No new emails to read.")
                     self.close()
                     exit()
-                msg = email.message_from_bytes(data[0][1])
-                if not isinstance(msg, str):
-                    emails.append(msg)
+                    msg = email.message_from_bytes(data[0][1])
+                    if not isinstance(msg, str):
+                        emails.append(msg)
 
             return emails
 
@@ -66,7 +66,8 @@ def save_attachments(msg, download_dir="/tmp"):
         if part.get('Content-Disposition') is None:
             continue
 
-        # adds current time to the file to prevent accidental overwritine of files
+        # adds current time to the file to prevent accidental overwritine of
+        # files
         app_date = datetime.datetime.today()
         filename = app_date.strftime("%Y-%m-%d-") + part.get_filename()
         att_path = os.path.join(download_dir, filename)
@@ -126,6 +127,8 @@ def parse_recipient(recipient):
     }
 
 # this test needs to be written. mock a bunch of stuff
+
+
 def sendmsg(server, login_info, from_info, to_info, message):
     """This basically wraps smtplib.SMTP.sendmail to configure a few options
     more cleanly.

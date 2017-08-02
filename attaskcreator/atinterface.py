@@ -32,11 +32,10 @@ class MyDatabase(Airtable):
 
         return None
 
-
     def search_for_email(self, table_name, eml_fielddata, fname_fielddata,
                          lname_fielddata):
-        """Searches for an email address in a airtable database table and creates a record if it is
-        not found.
+        """Searches for an email address in a airtable database table and
+        creates a record if it is not found.
 
         It takes the table name as input as well as field, data tuples for
         searching and assigment of email, fname, and lname fields.
@@ -60,14 +59,14 @@ class MyDatabase(Airtable):
         # get id for newly created record
         return self.search_for_rec(table_name, eml_field, eml_addr)
 
-
     def create_task_record(self, table_name, text_fielddata, person_fielddata,
                            notes_fielddata=(), attach_fielddata=()):
-        """Creates a linked record in a tasks table from data collected from an email.
+        """Creates a linked record in a tasks table from data collected from an
+        email.
 
         The record is created from found text, a link to the record for a person
-        in a people table, the entire email body from which the text was taken and
-        optionally a link to a record of attachments from that email.
+        in a people table, the entire email body from which the text was taken
+        and optionally a link to a record of attachments from that email.
 
         All _fielddata arguments are tuples of a field name and the data for
         that field. Unspecified fields default to empty tuple.
@@ -96,7 +95,6 @@ class MyDatabase(Airtable):
 
         self.create(table_name, data)
         return None
-
 
     def upload_attach(self, table_name, name_fielddata, files_fielddata):
         """Uploads files to airtable from a list of specified urls to a new record

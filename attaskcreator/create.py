@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 
-import json
+# import json
 import re
 import datetime
 from smtplib import SMTP
 from attaskcreator import settings
-from attaskcreator.config import setattrs
+# from attaskcreator.config import setattrs
 from attaskcreator.config import get_settings
 from attaskcreator import retrievemail
 # from attaskcreator import atinterface
 from attaskcreator import s3interface
+
 
 def choose_phrase(phrases, text):
     """Chooses the first phrase from a list of phrases that is found in the
@@ -18,6 +19,7 @@ def choose_phrase(phrases, text):
         if phrase.lower() in text.lower():
             return phrase
     return None
+
 
 def parse_email_message(params, text_to_search):
     """Returns text found between a prefix and terminating character or None
@@ -31,7 +33,7 @@ def parse_email_message(params, text_to_search):
     if trigger_phrase is not None:
         regex = re.compile(r'({} )([^{}]*)'.format(trigger_phrase, term_char),
                            re.IGNORECASE
-                          )
+                           )
         found_text = regex.search(text_to_search)
         try:
             return found_text.group(2)
@@ -44,7 +46,6 @@ def parse_email_message(params, text_to_search):
 
 def main():
     """Main function for attaskcreator."""
-    # get settings and email
     get_settings()
     mail = retrievemail.FetchMail(
         settings.eml_imap_server
@@ -74,7 +75,8 @@ def main():
                 people.append(person_id)
 
             # save any attachments
-            attachments = retrievemail.save_attachments(mess, "/tmp/attach_down")
+            attachments = retrievemail.save_attachments(mess,
+                                                        "/tmp/attach_down")
 
             # if there are attachments, upload them to s3 and send urls to
             # airtable.
@@ -95,11 +97,9 @@ def main():
                     )
                 file_info = (settings.tasks_table_attach, file_rec)
 
-
             notes_info = ()
             if settings.tasks_table_notes is not None:
                 notes_info = (settings.tasks_table_notes, data['body'])
-
 
             # pass to record method for creation
             atdb.create_task_record(
@@ -117,7 +117,7 @@ def main():
                     + 'is below:\n\n'
                     + 'Subject: {}\n'.format(data['subject'])
                     + data['body']
-                   )
+                    )
             retrievemail.sendmsg(
                 SMTP(settings.eml_smtp_server, 587),
                 (settings.eml_username, settings.eml_pwd),

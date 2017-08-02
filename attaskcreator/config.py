@@ -5,8 +5,6 @@ import os
 from attaskcreator import settings
 from attaskcreator.atinterface import MyDatabase
 
-# idomatic attribute setting
-
 
 def setattrs(_self, **kwargs):
     """Quickly set multiple attributes from key value pairs)."""
@@ -68,7 +66,7 @@ def get_settings():
              # text parsing config
              trigger_phrases=phrases,
              term_char=tables['Parse']['termination character'],
-            )
+             )
 
     # set environment variables for aws
     os.environ['AWS_ACCESS_KEY_ID'] = login['AWS']['access key id']
