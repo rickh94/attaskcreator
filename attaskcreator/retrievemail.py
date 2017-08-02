@@ -4,7 +4,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 # import time
 # import re
-# import smtplib
+import smtplib
 import os
 import imaplib
 import datetime
@@ -34,10 +34,10 @@ class FetchMail(imaplib.IMAP4_SSL):
                 except Exception:
                     print("No new emails to read.")
                     self.close()
-                    exit()
-                    msg = email.message_from_bytes(data[0][1])
-                    if not isinstance(msg, str):
-                        emails.append(msg)
+                    raise SystemExit(0)
+                msg = email.message_from_bytes(data[0][1])
+                if not isinstance(msg, str):
+                    emails.append(msg)
 
             return emails
 
