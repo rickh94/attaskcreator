@@ -7,7 +7,9 @@ PHRASES = ['test phrase 1',
            'can you please',
            'TEST UPPER CASE',
            'test phrase 4',
-          ]
+           ]
+
+
 class TestParseText(unittest.TestCase):
     """Test the text parsing methods for attaskcreator."""
 
@@ -18,6 +20,12 @@ class TestParseText(unittest.TestCase):
             'test phrase 1')
         self.assertEqual(
             create.choose_phrase(PHRASES, 'Can you please test this out'),
+            'can you please')
+        self.assertEqual(
+            create.choose_phrase(PHRASES, ('----Begin Forwarded Message\n'
+                                           'Some random stuff\n'
+                                           'Can you please\nreturn this text'
+                                           )),
             'can you please')
         self.assertEqual(
             create.choose_phrase(
@@ -43,6 +51,21 @@ class TestParseText(unittest.TestCase):
             )
         mock_choose_phrase.assert_called_once_with(
             PHRASES, 'Can you please return this?'
+            )
+        mock_choose_phrase.reset_mock()
+
+        # test with newlines
+        self.assertEqual(
+            create.parse_email_message(
+                (PHRASES, '?'),
+                ('---Begin Forwarded Message---\n'
+                 'This is a test.\n'
+                 'Can you please\nreturn this?')),
+            'return this')
+        mock_choose_phrase.assert_called_once_with(
+            PHRASES, ('---Begin Forwarded Message---\n'
+                      'This is a test.\n'
+                      'Can you please\nreturn this?')
             )
         mock_choose_phrase.reset_mock()
 

@@ -89,12 +89,14 @@ def get_msg_text(mess):
 def read_msg_info(msg):
     """Reads/decodes the message info needed for attaskcreator and returns it
     as a dict."""
+    # get message text and strip out html
+    body = html2text(get_msg_text(msg))
     return {
         'from': msg['from'],
         'to': msg['to'],
         'subject': msg['subject'],
         'date': msg['date'],
-        'body': html2text(get_msg_text(msg)),
+        'body': body,
     }
 
 
