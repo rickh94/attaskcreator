@@ -38,7 +38,8 @@ def parse_email_message(params, text_to_search):
         try:
             return found_text.group(2)
         except AttributeError:
-            # return none if nothing was found (unlikely because of flow control
+            # return none if nothing was found (unlikely because of flow
+            # control
             return None
     # return None if no trigger phrase wasn't found
     return None
