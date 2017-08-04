@@ -2,15 +2,12 @@
 import email
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-# import time
-# import re
-import smtplib
 import os
 import imaplib
 import datetime
+import daiquiri
 from html2text import html2text
 from nameparser import HumanName
-# from attaskcreator import settings
 
 
 # this is going to be a pain to test.
@@ -19,6 +16,8 @@ class FetchMail(imaplib.IMAP4_SSL):
 
     def select_inbox(self, username, password):
         """Select email from Inbox."""
+        logger = daiquiri.getLogger(__name__)
+        logger.info("Started select_inbox")
         self.login(username, password)
         self.select('Inbox')
 
