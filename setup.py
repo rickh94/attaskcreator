@@ -30,7 +30,8 @@ setup(
         'airtable',
         'html2text',
         'nameparser',
-        'boto3'
+        'boto3',
+        'daiquiri',
         ],
 
     entry_points={
