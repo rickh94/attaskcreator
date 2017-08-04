@@ -2,13 +2,13 @@
 
 # import json
 import re
+import logging
 import datetime
+import daiquiri
 from smtplib import SMTP
 from attaskcreator import settings
-# from attaskcreator.config import setattrs
 from attaskcreator.config import get_settings
 from attaskcreator import retrievemail
-# from attaskcreator import atinterface
 from attaskcreator import s3interface
 
 
@@ -51,6 +51,9 @@ def parse_email_message(params, text_to_search):
 def main():
     """Main function for attaskcreator."""
     get_settings()
+    daiquiri.setup(level=logging.INFO, outputs=(
+        daiquiri.output.File("/home/rick/Documents/attasktest.log"),)
+    )
     mail = retrievemail.FetchMail(
         settings.eml_imap_server
         )
