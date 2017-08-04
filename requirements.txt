@@ -3,3 +3,4 @@ airtable
 html2text
 nameparser
 boto3
+daiquiri
