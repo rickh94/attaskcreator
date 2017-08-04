@@ -1,5 +1,4 @@
-#!/usr/bin/env python3
-
+"""Main functions for attaskcreator."""
 # import json
 import re
 import datetime
@@ -30,16 +29,19 @@ def parse_email_message(params, text_to_search):
     """
     phrases, term_char = params
     trigger_phrase = choose_phrase(phrases, text_to_search)
+    # clean text_to_search
+    text_oneline = text_to_search.replace('\n', ' ')
+    text_clean = ' '.join(text_oneline.split())
     if trigger_phrase is not None:
         regex = re.compile(r'({} )([^{}]*)'.format(trigger_phrase, term_char),
                            re.IGNORECASE
                            )
-        found_text = regex.search(text_to_search)
+        found_text = regex.search(text_clean)
         try:
             return found_text.group(2)
         except AttributeError:
-            # return none if nothing was found (unlikely because of flow
-            # control
+            # TODO: raise errors instead
+            # return none if nothing was found (unlikely because of flow control
             return None
     # return None if no trigger phrase wasn't found
     return None
