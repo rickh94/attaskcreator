@@ -11,6 +11,8 @@ from attaskcreator.config import get_settings
 from attaskcreator import retrievemail
 from attaskcreator import s3interface
 
+LOGFILE = "/tmp/attest.log"
+
 
 def choose_phrase(phrases, text):
     """Chooses the first phrase from a list of phrases that is found in the
@@ -52,7 +54,7 @@ def main():
     """Main function for attaskcreator."""
     get_settings()
     daiquiri.setup(level=logging.INFO, outputs=(
-        daiquiri.output.File("/home/rick/Documents/attasktest.log"),)
+        daiquiri.output.File(LOGFILE),)
     )
     mail = retrievemail.FetchMail(
         settings.eml_imap_server
