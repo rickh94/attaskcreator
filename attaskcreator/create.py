@@ -9,6 +9,7 @@ from attaskcreator import settings
 from attaskcreator.config import get_settings
 from attaskcreator import retrievemail
 from attaskcreator import s3interface
+from attaskcreator import exceptions
 
 LOGFILE = "/tmp/attest.log"
 
@@ -90,20 +91,23 @@ def main():
             # airtable.
             file_info = ()
             if attachments:
-                s3_urls = []
-                for path in attachments:
-                    url = s3interface.make_url(path, settings.bucket)
-                    s3_urls.append(url)
-                # tag text with date to prevent duplicate records
-                tagged_text = ' T:'.join(
-                    (parsed_text, str(datetime.datetime.today()))
-                    )
-                file_rec = atdb.upload_attach(
-                    settings.at_files_table,
-                    (settings.files_table_name_field, tagged_text),
-                    (settings.files_table_attach_field, s3_urls)
-                    )
-                file_info = (settings.tasks_table_attach, file_rec)
+                try:
+                    s3_urls = []
+                    for path in attachments:
+                        url = s3interface.make_url(path, settings.bucket)
+                        s3_urls.append(url)
+                    # tag text with date to prevent duplicate records
+                    tagged_text = ' T:'.join(
+                        (parsed_text, str(datetime.datetime.today()))
+                        )
+                    file_rec = atdb.upload_attach(
+                        settings.at_files_table,
+                        (settings.files_table_name_field, tagged_text),
+                        (settings.files_table_attach_field, s3_urls)
+                        )
+                    file_info = (settings.tasks_table_attach, file_rec)
+                except exceptions.NoAttachmentError:
+                    file_info = ()
 
             notes_info = ()
             if settings.tasks_table_notes is not None:
