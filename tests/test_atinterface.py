@@ -30,8 +30,9 @@ class MyDatabaseTest(unittest.TestCase):
     def setUp(self):
         self.base = MyDatabase('test_id', 'testkey')
 
+    @mock.patch('attaskcreator.atinterface.logging')
     @mock.patch.object(MyDatabase, 'get')
-    def test_search_for_rec(self, mock_get):
+    def test_search_for_rec(self, mock_get, mock_logging):
         """test the search for rec method"""
         mock_get.return_value = {
             "records": [
@@ -67,7 +68,13 @@ class MyDatabaseTest(unittest.TestCase):
                                      'nothing to see here')
             )
         mock_get.assert_called_with('test_table2')
-
+        # fail to get table, raise exception
+        mock_get.side_effect = AttributeError
+        self.assertRaises(
+            SystemExit,
+            self.base.search_for_rec,
+            'test_table2', 'test_field', 'nothing')
+        mock_logging.exception.assert_called()
 
     @mock.patch.object(MyDatabase, 'create')
     @mock.patch.object(MyDatabase, 'search_for_rec')
@@ -102,6 +109,7 @@ class MyDatabaseTest(unittest.TestCase):
                                            'First Name': 'Barack',
                                            'Last Name': 'Obama',
                                        })
+
 
     @mock.patch.object(MyDatabase, 'create')
     def test_create_test_record(self, mock_create):

@@ -4,6 +4,10 @@ Contains functions for searching for records, creating records, and uploading
 files from urls.
 """
 from airtable.airtable import Airtable
+import daiquiri
+import logging
+
+LOGGER = daiquiri.getLogger(__name__)
 
 
 class MyDatabase(Airtable):
@@ -19,7 +23,13 @@ class MyDatabase(Airtable):
 
         The search is performed in a specified field for a specified term.
         """
-        table = self.get(table)
+        try:
+            table = self.get(table)
+        except AttributeError:
+            logging.exception(("Could not get table. Check database id "
+                               "API key and table name. Traceback follows:"))
+            LOGGER.error("Something has gone wrong")
+            raise SystemExit(1)
         for rec in table['records']:
             curr_id = rec['id']
             try:
