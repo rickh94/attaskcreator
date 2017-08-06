@@ -111,7 +111,14 @@ class MyDatabase(Airtable):
                 attach_id = [attach_id]
             data[attach_field] = attach_id
 
-        self.create(table_name, data)
+        try:
+            self.create(table_name, data)
+        except AttributeError:
+            logging.exception(("Could not create record. Check database "
+                               "id, API key and table name. Traceback "
+                               "follows:"))
+            raise SystemExit(1)
+
         return None
 
     def upload_attach(self, table_name, name_fielddata, files_fielddata):
@@ -134,7 +141,13 @@ class MyDatabase(Airtable):
             name_field: name,
             attach_field: all_urls,
         }
-        self.create(table_name, data)
+        try:
+            self.create(table_name, data)
+        except AttributeError:
+            logging.exception(("Could not create record. Check database "
+                               "id, API key and table name. Traceback "
+                               "follows:"))
+            raise SystemExit(1)
 
         # return new rec id
         return self.search_for_rec(table_name, name_field, name)
