@@ -2,8 +2,10 @@
 import configparser
 import atexit
 import os
+import logging
 from attaskcreator import settings
 from attaskcreator.atinterface import MyDatabase
+from attaskcreator import exceptions
 
 
 def setattrs(_self, **kwargs):
@@ -18,16 +20,25 @@ def get_settings():
     Login options are stored, used to login, or exported to the environment.
     """
     login = configparser.ConfigParser()
-    login.read("/etc/attaskcreator/login.conf")
     tables = configparser.ConfigParser()
-    tables.read("/etc/attaskcreator/tables.conf")
-    with open("/etc/attaskcreator/phrases.conf", "r") as f:
-        phrases = f.readlines()
+    try:
+        login.read("/etc/attaskcreator/login.conf")
+        tables.read("/etc/attaskcreator/tables.conf")
+        with open("/etc/attaskcreator/phrases.conf", "r") as f:
+            phrases = f.readlines()
+    except OSError:
+        logging.exception('Could not open config files. Traceback Follows:')
+        raise SystemExit(8)
 
     # strip whitespace and newlines
     phrases = list(map(lambda x: x.strip(), phrases))
 
     # make airtable object
+    if 'app' not in login['Airtable']['database id']:
+        raise exceptions.ConfigError("Database ID is not correct")
+    if 'key' not in login['Airtable']['api key']:
+        raise exceptions.ConfigError("API key is not correct")
+
     atdb = MyDatabase(
         login['Airtable']['database id'],
         login['Airtable']['api key']
@@ -61,7 +72,8 @@ def get_settings():
              # files table
              at_files_table=tables['Files Table']['name'],
              files_table_name_field=tables['Files Table']['key field'],
-             files_table_attach_field=tables['Files Table']['Attachment Field'],
+             files_table_attach_field=(
+                 tables['Files Table']['Attachment Field']),
 
              # text parsing config
              trigger_phrases=phrases,
@@ -69,10 +81,13 @@ def get_settings():
              )
 
     # set environment variables for aws
-    os.environ['AWS_ACCESS_KEY_ID'] = login['AWS']['access key id']
-    os.environ['AWS_SECRET_ACCESS_KEY'] = login['AWS']['secret access key']
-
-    atexit.register(unset_aws)
+    try:
+        os.environ['AWS_ACCESS_KEY_ID'] = login['AWS']['access key id']
+        os.environ['AWS_SECRET_ACCESS_KEY'] = login['AWS']['secret access key']
+    except KeyError:
+        pass
+    else:
+        atexit.register(unset_aws)
 
 
 def unset_aws():
