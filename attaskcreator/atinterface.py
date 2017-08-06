@@ -29,7 +29,6 @@ class MyDatabase(Airtable):
         except AttributeError:
             logging.exception(("Could not get table. Check database id "
                                "API key and table name. Traceback follows:"))
-            LOGGER.error("Something has gone wrong")
             raise SystemExit(1)
         found = False
         for rec in table['records']:
@@ -66,7 +65,13 @@ class MyDatabase(Airtable):
                 fname_field: fname,
                 lname_field: lname,
             }
-            self.create(table_name, data)
+            try:
+                self.create(table_name, data)
+            except AttributeError:
+                logging.exception(("Could not create record. Check database id "
+                                   "API key and table name. Traceback "
+                                   "follows:"))
+                raise SystemExit(1)
             rec_id = self.search_for_rec(table_name, eml_field, eml_addr)
 
         # get id for newly created record

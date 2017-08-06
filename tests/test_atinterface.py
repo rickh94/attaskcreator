@@ -1,5 +1,6 @@
 """Tests interaction with the airtable API through calls to the MyDatabase
-class."""
+class.
+"""
 import unittest
 from unittest import mock
 from attaskcreator.atinterface import MyDatabase
@@ -77,11 +78,14 @@ class MyDatabaseTest(unittest.TestCase):
             SystemExit,
             self.base.search_for_rec,
             'test_table2', 'test_field', 'nothing')
+        mock_logging.
         mock_logging.exception.assert_called()
 
+    @mock.patch('attaskcreator.atinterface.logging')
     @mock.patch.object(MyDatabase, 'create')
     @mock.patch.object(MyDatabase, 'search_for_rec')
-    def test_search_for_email(self, mock_search_for_rec, mock_create):
+    def test_search_for_email(self, mock_search_for_rec, mock_create,
+                              mock_logging):
         """Tests search_for_email."""
         # find something
         mock_search_for_rec.return_value = 'rec01emf000'
@@ -95,7 +99,7 @@ class MyDatabaseTest(unittest.TestCase):
             'rec01emf000')
         mock_search_for_rec.assert_called_with('people_table', 'email',
                                                'test@example.com')
-        # find nothing
+        # find nothing and create record
         mock_search_for_rec.side_effect = (exceptions.NoRecordError,
                                            'rec01emf001')
         self.assertEqual(
@@ -115,6 +119,18 @@ class MyDatabaseTest(unittest.TestCase):
                                            'First Name': 'Barack',
                                            'Last Name': 'Obama',
                                        })
+        # fail to create record
+        mock_search_for_rec.side_effect = exceptions.NoRecordError
+        mock_create.side_effect = AttributeError
+        self.assertRaises(
+            SystemExit,
+            self.base.search_for_email,
+            'people_table',
+            ('email', 'bobama@whitehouse.gov'),
+            ('First Name', 'Barack'),
+            ('Last Name', 'Obama')
+        )
+        mock_logging.exception.assert_called()
 
     @mock.patch.object(MyDatabase, 'create')
     def test_create_test_record(self, mock_create):
