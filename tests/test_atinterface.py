@@ -3,6 +3,7 @@ class."""
 import unittest
 from unittest import mock
 from attaskcreator.atinterface import MyDatabase
+from attaskcreator import exceptions
 
 
 DUMMY_RECORDS = {
@@ -63,10 +64,12 @@ class MyDatabaseTest(unittest.TestCase):
             'rec234567891')
         mock_get.assert_called_with('test_table')
         # find nothing
-        self.assertIsNone(
-            self.base.search_for_rec('test_table2', 'test_field',
-                                     'nothing to see here')
-            )
+        self.assertRaises(
+            exceptions.NoRecordError,
+            self.base.search_for_rec,
+            'test_table2',
+            'test_field',
+            'nothing to see here')
         mock_get.assert_called_with('test_table2')
         # fail to get table, raise exception
         mock_get.side_effect = AttributeError
@@ -93,14 +96,17 @@ class MyDatabaseTest(unittest.TestCase):
         mock_search_for_rec.assert_called_with('people_table', 'email',
                                                'test@example.com')
         # find nothing
-        mock_search_for_rec.return_value = None
-        self.assertIsNone(
+        mock_search_for_rec.side_effect = (exceptions.NoRecordError,
+                                           'rec01emf001')
+        self.assertEqual(
             self.base.search_for_email(
                 'people_table',
                 ('email', 'bobama@whitehouse.gov'),
                 ('First Name', 'Barack'),
                 ('Last Name', 'Obama'),
-                ))
+                ),
+            'rec01emf001'
+        )
         mock_search_for_rec.assert_any_call('people_table', 'email',
                                             'bobama@whitehouse.gov')
         mock_create.assert_called_with('people_table',
@@ -109,7 +115,6 @@ class MyDatabaseTest(unittest.TestCase):
                                            'First Name': 'Barack',
                                            'Last Name': 'Obama',
                                        })
-
 
     @mock.patch.object(MyDatabase, 'create')
     def test_create_test_record(self, mock_create):
@@ -125,7 +130,8 @@ class MyDatabaseTest(unittest.TestCase):
         mock_create.assert_called_with('test table1',
                                        {
                                            'test text field': 'my test text',
-                                           'test person field': ['rec123456789'],
+                                           'test person field':
+                                           ['rec123456789'],
                                        })
         # tests with some fields
         self.assertIsNone(
@@ -139,7 +145,8 @@ class MyDatabaseTest(unittest.TestCase):
         mock_create.assert_called_with('test table2',
                                        {
                                            'test text field': 'my test text',
-                                           'test person field': ['rec123456789'],
+                                           'test person field':
+                                           ['rec123456789'],
                                            'test attachments field':
                                            ['rec0009987'],
                                        })
@@ -155,7 +162,8 @@ class MyDatabaseTest(unittest.TestCase):
         mock_create.assert_called_with('test table2',
                                        {
                                            'test text field': 'my test text',
-                                           'test person field': ['rec123456789'],
+                                           'test person field':
+                                           ['rec123456789'],
                                            'test notes field':
                                            'these are some notes',
                                        })
@@ -172,7 +180,8 @@ class MyDatabaseTest(unittest.TestCase):
         mock_create.assert_called_with('test table3',
                                        {
                                            'test text field': 'my test text',
-                                           'test person field': ['rec123456789'],
+                                           'test person field':
+                                           ['rec123456789'],
                                            'test notes field':
                                            'this is the full\n body of the'
                                            + ' email',
@@ -191,8 +200,10 @@ class MyDatabaseTest(unittest.TestCase):
             )
         mock_create.assert_called_with('test table2',
                                        {
-                                           'test text field': 'my second test text',
-                                           'test person field': ['rec123456789'],
+                                           'test text field':
+                                           'my second test text',
+                                           'test person field':
+                                           ['rec123456789'],
                                            'test attachments field':
                                            ['rec0009987'],
                                        })

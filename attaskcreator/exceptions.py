@@ -6,3 +6,10 @@ class NoAttachmentError(Exception):
     exiting the whole program.
     """
     pass
+
+
+class NoRecordError(Exception):
+    """Exception raised if a record is not found matching a search in a certain
+    table.
+    """
+    pass
