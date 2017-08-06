@@ -131,8 +131,9 @@ class MyDatabaseTest(unittest.TestCase):
         )
         mock_logging.exception.assert_called()
 
+    @mock.patch('attaskcreator.atinterface.logging')
     @mock.patch.object(MyDatabase, 'create')
-    def test_create_test_record(self, mock_create):
+    def test_create_test_record(self, mock_create, mock_logging):
         """Tests for create_task_record."""
         # minimal test
         self.assertIsNone(
@@ -244,10 +245,22 @@ class MyDatabaseTest(unittest.TestCase):
                                            ['rec0009987', 'rec1009987'],
 
                                        })
+        # fail to connect to table properly
+        mock_create.side_effect = AttributeError
+        self.assertRaises(
+            SystemExit,
+            self.base.create_task_record,
+            'failtable',
+            ('test', 'test'),
+            ('othertest', 'othertest')
+        )
+        mock_logging.exception.assert_called()
 
+    @mock.patch('attaskcreator.atinterface.logging')
     @mock.patch.object(MyDatabase, 'search_for_rec')
     @mock.patch.object(MyDatabase, 'create')
-    def test_upload_attach(self, mock_create, mock_search_for_rec):
+    def test_upload_attach(self, mock_create, mock_search_for_rec,
+                           mock_logging):
         """Tests the uploading of attachments."""
         mock_search_for_rec.return_value = 'rec001234567'
         # basic
@@ -319,3 +332,13 @@ class MyDatabaseTest(unittest.TestCase):
             'test name field',
             'test record name',
             )
+        # fails to upload to table
+        mock_create.side_effect = AttributeError
+        self.assertRaises(
+            SystemExit,
+            self.base.upload_attach,
+            'test attach table',
+            ('name field', 'record name'),
+            ('test attach field', 'http://fail.com')
+        )
+        mock_logging.exception.assert_called()

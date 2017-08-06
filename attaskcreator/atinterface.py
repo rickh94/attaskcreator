@@ -82,9 +82,9 @@ class MyDatabase(Airtable):
         """Creates a linked record in a tasks table from data collected from an
         email.
 
-        The record is created from found text, a link to the record for a person
-        in a people table, the entire email body from which the text was taken
-        and optionally a link to a record of attachments from that email.
+        The record is created from found text, a link to the record for a
+        person in a people table, the entire email body from which the text was
+        taken and optionally a link to a record of attachments from that email.
 
         All _fielddata arguments are tuples of a field name and the data for
         that field. Unspecified fields default to empty tuple.
@@ -111,7 +111,14 @@ class MyDatabase(Airtable):
                 attach_id = [attach_id]
             data[attach_field] = attach_id
 
-        self.create(table_name, data)
+        try:
+            self.create(table_name, data)
+        except AttributeError:
+            logging.exception(("Could not create record. Check database "
+                               "id, API key and table name. Traceback "
+                               "follows:"))
+            raise SystemExit(1)
+
         return None
 
     def upload_attach(self, table_name, name_fielddata, files_fielddata):
@@ -134,7 +141,13 @@ class MyDatabase(Airtable):
             name_field: name,
             attach_field: all_urls,
         }
-        self.create(table_name, data)
+        try:
+            self.create(table_name, data)
+        except AttributeError:
+            logging.exception(("Could not create record. Check database "
+                               "id, API key and table name. Traceback "
+                               "follows:"))
+            raise SystemExit(1)
 
         # return new rec id
         return self.search_for_rec(table_name, name_field, name)
