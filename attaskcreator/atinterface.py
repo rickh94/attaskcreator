@@ -68,8 +68,8 @@ class MyDatabase(Airtable):
             try:
                 self.create(table_name, data)
             except AttributeError:
-                logging.exception(("Could not create record. Check database id "
-                                   "API key and table name. Traceback "
+                logging.exception(("Could not create record. Check database "
+                                   "id, API key and table name. Traceback "
                                    "follows:"))
                 raise SystemExit(1)
             rec_id = self.search_for_rec(table_name, eml_field, eml_addr)

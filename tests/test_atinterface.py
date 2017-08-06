@@ -78,7 +78,6 @@ class MyDatabaseTest(unittest.TestCase):
             SystemExit,
             self.base.search_for_rec,
             'test_table2', 'test_field', 'nothing')
-        mock_logging.
         mock_logging.exception.assert_called()
 
     @mock.patch('attaskcreator.atinterface.logging')
