@@ -3,9 +3,10 @@
 Contains functions for searching for records, creating records, and uploading
 files from urls.
 """
+import logging
 from airtable.airtable import Airtable
 import daiquiri
-import logging
+from attaskcreator import exceptions
 
 LOGGER = daiquiri.getLogger(__name__)
 
@@ -30,17 +31,20 @@ class MyDatabase(Airtable):
                                "API key and table name. Traceback follows:"))
             LOGGER.error("Something has gone wrong")
             raise SystemExit(1)
+        found = False
         for rec in table['records']:
             curr_id = rec['id']
             try:
                 if term.lower() in rec['fields'][field].lower():
                     # return if search term is found
+                    found = True
                     return curr_id
             # deal with json's lack of normalization
             except KeyError:
                 continue
 
-        return None
+        if not found:
+            raise exceptions.NoRecordError
 
     def search_for_email(self, table_name, eml_fielddata, fname_fielddata,
                          lname_fielddata):
@@ -53,21 +57,20 @@ class MyDatabase(Airtable):
         eml_field, eml_addr = eml_fielddata
         fname_field, fname = fname_fielddata
         lname_field, lname = lname_fielddata
-        rec_id = self.search_for_rec(table_name, eml_field, eml_addr)
-        if rec_id is not None:
-            return rec_id
-
-        # create new record if none found
-        data = {
-            eml_field: eml_addr.lower(),
-            fname_field: fname,
-            lname_field: lname,
-        }
-
-        self.create(table_name, data)
+        try:
+            rec_id = self.search_for_rec(table_name, eml_field, eml_addr)
+        except exceptions.NoRecordError:
+            # create new record if none found
+            data = {
+                eml_field: eml_addr.lower(),
+                fname_field: fname,
+                lname_field: lname,
+            }
+            self.create(table_name, data)
+            rec_id = self.search_for_rec(table_name, eml_field, eml_addr)
 
         # get id for newly created record
-        return self.search_for_rec(table_name, eml_field, eml_addr)
+        return rec_id
 
     def create_task_record(self, table_name, text_fielddata, person_fielddata,
                            notes_fielddata=(), attach_fielddata=()):
