@@ -41,7 +41,7 @@ class S3InterfaceTest(unittest.TestCase):
             '/tmp/downloads/testfile.txt',
             'mytestbucket')
         mock_boto3.client.assert_called_with('s3')
-        mock_logger.error.assert_called()
+        mock_logger.error.assert_any_call(mock.ANY)
 
         mock_s3.reset_mock()
         mock_s3.side_effect = OSError
@@ -51,4 +51,4 @@ class S3InterfaceTest(unittest.TestCase):
             '/tmp/downloads/testfile.txt',
             'mytestbucket')
         mock_boto3.client.assert_called_with('s3')
-        mock_logger.error.assert_called()
+        mock_logger.error.assert_any_call(mock.ANY)

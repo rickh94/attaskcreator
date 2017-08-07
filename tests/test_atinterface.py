@@ -78,7 +78,7 @@ class MyDatabaseTest(unittest.TestCase):
             SystemExit,
             self.base.search_for_rec,
             'test_table2', 'test_field', 'nothing')
-        mock_logging.exception.assert_called()
+        mock_logging.exception.assert_any_call(mock.ANY)
 
     @mock.patch('attaskcreator.atinterface.logging')
     @mock.patch.object(MyDatabase, 'create')
@@ -129,7 +129,7 @@ class MyDatabaseTest(unittest.TestCase):
             ('First Name', 'Barack'),
             ('Last Name', 'Obama')
         )
-        mock_logging.exception.assert_called()
+        mock_logging.exception.assert_any_call(mock.ANY)
 
     @mock.patch('attaskcreator.atinterface.logging')
     @mock.patch.object(MyDatabase, 'create')
@@ -254,7 +254,7 @@ class MyDatabaseTest(unittest.TestCase):
             ('test', 'test'),
             ('othertest', 'othertest')
         )
-        mock_logging.exception.assert_called()
+        mock_logging.exception.assert_any_call(mock.ANY)
 
     @mock.patch('attaskcreator.atinterface.logging')
     @mock.patch.object(MyDatabase, 'search_for_rec')
@@ -341,4 +341,4 @@ class MyDatabaseTest(unittest.TestCase):
             ('name field', 'record name'),
             ('test attach field', 'http://fail.com')
         )
-        mock_logging.exception.assert_called()
+        mock_logging.exception.assert_any_call(mock.ANY)
