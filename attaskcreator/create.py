@@ -1,5 +1,4 @@
-#!/usr/bin/env python3
-
+"""Main functions for attaskcreator."""
 # import json
 import re
 import logging

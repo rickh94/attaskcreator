@@ -13,3 +13,8 @@ class NoRecordError(Exception):
     table.
     """
     pass
+
+
+class ConfigError(Exception):
+    """Exception raised if configuration is incorrect."""
+    pass
