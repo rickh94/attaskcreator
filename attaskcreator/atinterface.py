@@ -23,7 +23,7 @@ class MyDatabase(Airtable):
         for rec in table['records']:
             curr_id = rec['id']
             try:
-                if term in rec['fields'][field]:
+                if term.lower() in rec['fields'][field].lower():
                     # return if search term is found
                     return curr_id
             # deal with json's lack of normalization
@@ -49,7 +49,7 @@ class MyDatabase(Airtable):
 
         # create new record if none found
         data = {
-            eml_field: eml_addr,
+            eml_field: eml_addr.lower(),
             fname_field: fname,
             lname_field: lname,
         }
@@ -64,9 +64,9 @@ class MyDatabase(Airtable):
         """Creates a linked record in a tasks table from data collected from an
         email.
 
-        The record is created from found text, a link to the record for a person
-        in a people table, the entire email body from which the text was taken
-        and optionally a link to a record of attachments from that email.
+        The record is created from found text, a link to the record for a
+        person in a people table, the entire email body from which the text was
+        taken and optionally a link to a record of attachments from that email.
 
         All _fielddata arguments are tuples of a field name and the data for
         that field. Unspecified fields default to empty tuple.

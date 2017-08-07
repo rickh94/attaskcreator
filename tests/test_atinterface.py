@@ -55,10 +55,10 @@ class MyDatabaseTest(unittest.TestCase):
             self.base.search_for_rec('test_table', 'test_field', 'find me'),
             'rec123456789')
         mock_get.assert_called_with('test_table')
-        # find something else
+        # test case sensitivity
         self.assertEqual(
             self.base.search_for_rec('test_table', 'test_field',
-                                     'find something else'),
+                                     'Find Something eLse'),
             'rec234567891')
         mock_get.assert_called_with('test_table')
         # find nothing
@@ -67,7 +67,6 @@ class MyDatabaseTest(unittest.TestCase):
                                      'nothing to see here')
             )
         mock_get.assert_called_with('test_table2')
-
 
     @mock.patch.object(MyDatabase, 'create')
     @mock.patch.object(MyDatabase, 'search_for_rec')
@@ -117,7 +116,8 @@ class MyDatabaseTest(unittest.TestCase):
         mock_create.assert_called_with('test table1',
                                        {
                                            'test text field': 'my test text',
-                                           'test person field': ['rec123456789'],
+                                           'test person field':
+                                           ['rec123456789'],
                                        })
         # tests with some fields
         self.assertIsNone(
@@ -131,7 +131,8 @@ class MyDatabaseTest(unittest.TestCase):
         mock_create.assert_called_with('test table2',
                                        {
                                            'test text field': 'my test text',
-                                           'test person field': ['rec123456789'],
+                                           'test person field':
+                                           ['rec123456789'],
                                            'test attachments field':
                                            ['rec0009987'],
                                        })
@@ -147,7 +148,8 @@ class MyDatabaseTest(unittest.TestCase):
         mock_create.assert_called_with('test table2',
                                        {
                                            'test text field': 'my test text',
-                                           'test person field': ['rec123456789'],
+                                           'test person field':
+                                           ['rec123456789'],
                                            'test notes field':
                                            'these are some notes',
                                        })
@@ -164,7 +166,8 @@ class MyDatabaseTest(unittest.TestCase):
         mock_create.assert_called_with('test table3',
                                        {
                                            'test text field': 'my test text',
-                                           'test person field': ['rec123456789'],
+                                           'test person field':
+                                           ['rec123456789'],
                                            'test notes field':
                                            'this is the full\n body of the'
                                            + ' email',
@@ -183,8 +186,10 @@ class MyDatabaseTest(unittest.TestCase):
             )
         mock_create.assert_called_with('test table2',
                                        {
-                                           'test text field': 'my second test text',
-                                           'test person field': ['rec123456789'],
+                                           'test text field':
+                                           'my second test text',
+                                           'test person field':
+                                           ['rec123456789'],
                                            'test attachments field':
                                            ['rec0009987'],
                                        })
