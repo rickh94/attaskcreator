@@ -3,7 +3,7 @@ from os import path
 from setuptools import setup, find_packages
 
 HERE = path.abspath(path.dirname(__file__))
-VERS = '1.0.2'
+VERS = '1.0.3'
 DESC = 'Script to create task records in airtable from parsed emails'
 
 with open(path.join(HERE, 'README.md'), encoding='utf-8') as f:
