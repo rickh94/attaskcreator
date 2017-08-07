@@ -1,8 +1,8 @@
 """Main functions for attaskcreator."""
 # import json
+import datetime
 import re
 import logging
-import datetime
 import daiquiri
 from smtplib import SMTP
 from attaskcreator import settings
@@ -20,7 +20,8 @@ def choose_phrase(phrases, text):
     for phrase in phrases:
         if phrase.lower() in text.lower():
             return phrase
-    return None
+    # if a trigger phrase was not found, raise an exception.
+    raise exceptions.NoPhraseError("Phrase was not found in {}.".format(text))
 
 
 def parse_email_message(params, text_to_search):
@@ -31,23 +32,23 @@ def parse_email_message(params, text_to_search):
     text_to_search: self-explanatory.
     """
     phrases, term_char = params
+    # will raise exception if nothing found, propogates to main.
     trigger_phrase = choose_phrase(phrases, text_to_search)
     # clean text_to_search
     text_oneline = text_to_search.replace('\n', ' ')
     text_clean = ' '.join(text_oneline.split())
-    if trigger_phrase is not None:
-        regex = re.compile(r'({} )([^{}]*)'.format(trigger_phrase, term_char),
-                           re.IGNORECASE
-                           )
-        found_text = regex.search(text_clean)
-        try:
-            return found_text.group(2)
-        except AttributeError:
-            # return none if nothing was found (unlikely because of flow
-            # control
-            return None
-    # return None if no trigger phrase wasn't found
-    return None
+    regex = re.compile(r'({} )([^{}]*)'.format(trigger_phrase, term_char),
+                       re.IGNORECASE
+                       )
+    found_text = regex.search(text_clean)
+    try:
+        return found_text.group(2)
+    except AttributeError:
+        raise exceptions.RegexFailedError(('Could not find text after {tp} in'
+                                           ' after {st}').format(
+                                               tp=trigger_phrase,
+                                               st=text_clean
+                                           ))
 
 
 def main():
@@ -56,6 +57,7 @@ def main():
     daiquiri.setup(level=logging.INFO, outputs=(
         daiquiri.output.File(LOGFILE),)
     )
+    logger = daiquiri.getLogger(__name__)
     mail = retrievemail.FetchMail(
         settings.eml_imap_server
         )
@@ -67,10 +69,10 @@ def main():
     for mess in messages:
         data = retrievemail.read_msg_info(mess)
 
-        parsed_text = parse_email_message(
-            (settings.trigger_phrases, settings.term_char), data['body']
-            )
-        if parsed_text:
+        try:
+            parsed_text = parse_email_message(
+                (settings.trigger_phrases, settings.term_char), data['body']
+                )
             # get needed info
             to_info = retrievemail.parse_to_field(data['to'])
             people = []
@@ -121,9 +123,10 @@ def main():
                 notes_info,
                 file_info
                 )
-        else:
+        except (exceptions.RegexFailedError, exceptions.NoPhraseError):
+            logger.exception("No record was created.")
             subject = 'Failed to create airtable task record'
-            body = ('The trigger phrase was not found in your email to'
+            body = ('The trigger phrase was not found in your email to '
                     + data['to']
                     + ', so a record was not created. The body of the email'
                     + 'is below:\n\n'

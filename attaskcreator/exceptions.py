@@ -18,3 +18,15 @@ class NoRecordError(Exception):
 class ConfigError(Exception):
     """Exception raised if configuration is incorrect."""
     pass
+
+
+class NoPhraseError(Exception):
+    """Exception raised if the phrase is not found in the search text."""
+    pass
+
+
+class RegexFailedError(Exception):
+    """Exception raised if the regex doesn't return anything even though the
+    phrase was in the search text.
+    """
+    pass

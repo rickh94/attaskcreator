@@ -2,6 +2,7 @@
 import unittest
 from unittest import mock
 from attaskcreator import create
+from attaskcreator import exceptions
 
 PHRASES = ['test phrase 1',
            'can you please',
@@ -34,9 +35,11 @@ class TestParseText(unittest.TestCase):
         self.assertEqual(
             create.choose_phrase(PHRASES, 'this is a test of test phrase 4'),
             'test phrase 4')
-        self.assertIsNone(
-            create.choose_phrase(
-                PHRASES, 'this is a test that returns nothing')
+        self.assertRaises(
+            exceptions.NoPhraseError,
+            create.choose_phrase,
+            PHRASES,
+            'this is a test that returns nothing'
             )
 
     @mock.patch('attaskcreator.create.choose_phrase')
@@ -69,23 +72,27 @@ class TestParseText(unittest.TestCase):
             )
         mock_choose_phrase.reset_mock()
 
+        # would you please
         mock_choose_phrase.return_value = 'Would you please'
-        self.assertEqual(
-            create.parse_email_message(
-                (PHRASES, '?'),
-                'Would you please return this?'),
-            'return this'
+        self.assertRaises(
+            exceptions.RegexFailedError,
+            create.parse_email_message,
+            (PHRASES, '?'),
+            'Would you please?',
             )
         mock_choose_phrase.assert_called_once_with(
-            PHRASES, 'Would you please return this?'
+            PHRASES, 'Would you please?'
             )
         mock_choose_phrase.reset_mock()
 
-        mock_choose_phrase.return_value = None
-        self.assertIsNone(
-            create.parse_email_message(
-                (PHRASES, '?'),
-                'This returns nothing?')
+        # fail to get phrase, exception should propogate up
+        mock_choose_phrase.side_effect = exceptions.NoPhraseError(
+            "Phrase was not found in the text.")
+        self.assertRaises(
+            exceptions.NoPhraseError,
+            create.parse_email_message,
+            (PHRASES, '?'),
+            'This returns nothing?'
             )
         mock_choose_phrase.assert_called_once_with(
             PHRASES, 'This returns nothing?'
