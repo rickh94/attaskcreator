@@ -5,8 +5,7 @@ import re
 import logging
 import daiquiri
 from smtplib import SMTP
-from attaskcreator import settings
-from attaskcreator.config import get_settings
+from attaskcreator.config import Settings
 from attaskcreator import retrievemail
 from attaskcreator import s3interface
 from attaskcreator import exceptions
@@ -53,11 +52,16 @@ def parse_email_message(params, text_to_search):
 
 def main():
     """Main function for attaskcreator."""
-    get_settings()
-    daiquiri.setup(level=logging.INFO, outputs=(
-        daiquiri.output.File(LOGFILE),)
-    )
+    # setup
+    settings = Settings()
+    settings.setup_log()
     logger = daiquiri.getLogger(__name__)
+    try:
+        settings.setup_all()
+    except exceptions.ConfigError:
+        logging.exception("The configuration files are not valid. Details:")
+        raise SystemExit(1)
+
     mail = retrievemail.FetchMail(
         settings.eml_imap_server
         )

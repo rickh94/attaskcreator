@@ -42,12 +42,12 @@ class Settings(object):
         """Sets up the airtable database."""
         if 'app' not in self.login['Airtable']['database id']:
             raise exceptions.ConfigError("Database ID is not correct")
-        if 'key' not in login['Airtable']['api key']:
+        if 'key' not in self.login['Airtable']['api key']:
             raise exceptions.ConfigError("API key is not correct")
         try:
-            self.atdb = MyDatabase(
-                login['Airtable']['database id'],
-                login['Airtable']['api key']
+            self.database = MyDatabase(
+                self.login['Airtable']['database id'],
+                self.login['Airtable']['api key']
             )
         except KeyError as err:
             raise exceptions.ConfigError(
@@ -114,7 +114,16 @@ class Settings(object):
         except KeyError:
             pass
 
-    def setup_all():
+    def setup_log(self):
+        try:
+            logfile = self.login['Logging']['File']
+        except KeyError:
+            logfile = '/tmp/attaskcreator.log'
+        daiquiri.setup(level=logging.INFO, outputs=(
+            daiquiri.output.File(logfile),
+        ))
+
+    def setup_all(self):
         """Sets up everything for attaskcreator.  """
         self.setup_eml()
         self.setup_db()
