@@ -2,9 +2,12 @@
 import unittest
 from unittest import mock
 from datetime import datetime
+import imaplib
 import email
 import os
+import smtplib
 from attaskcreator import retrievemail
+from attaskcreator import exceptions
 
 HERE = os.path.dirname(__file__)
 
@@ -14,8 +17,8 @@ class TestEmailMethods(unittest.TestCase):
 
     def setUp(self):
         """setup TestEmailMethods."""
-        with mock.patch.object(retrievemail.FetchMail, '__init__')\
-            as mock_init:
+        with mock.patch.object(
+                retrievemail.FetchMail, '__init__') as mock_init:
             mock_init.return_value = None
             self.testmail = retrievemail.FetchMail('test.example.com')
         with open(os.path.join(HERE, 'testeml'), 'br') as e:
@@ -32,7 +35,8 @@ class TestEmailMethods(unittest.TestCase):
              'johnsmith@example.com'},
             {'fname': 'Barack', 'lname': 'Obama', 'email':
              'bobama@whitehouse.gov'},
-            {'fname': 'Cory', 'lname': 'Booker', 'email': 'cbooker@senate.gov'},
+            {'fname': 'Cory', 'lname': 'Booker', 'email':
+             'cbooker@senate.gov'},
             {'fname': '', 'lname': '', 'email': 'admin@google.com'},
             {'fname': 'Bill', 'lname': 'Clinton', 'email':
              'bclinton@whitehouse.gov'},
@@ -42,9 +46,31 @@ class TestEmailMethods(unittest.TestCase):
     @mock.patch.object(retrievemail.FetchMail, 'login')
     def test_select_inbox(self, mock_login, mock_select):
         """test selecting the inbox automatically"""
+        # sucessful
+        mock_select.return_value = ('OK', [b'10'])
         self.testmail.select_inbox('testuser', 'password')
         mock_login.assert_called_once_with('testuser', 'password')
         mock_select.assert_called_once_with('Inbox')
+
+        # test Unknown mailbox
+        mock_select.return_value = ('NO', [b'[NONEXISTANT]'])
+        self.assertRaises(
+            exceptions.EmailError,
+            self.testmail.select_inbox,
+            'testuser',
+            'testpass'
+        )
+
+        # test login failure
+        mock_select.reset_mock()
+        mock_select.return_value = ('OK', [b'10'])
+        mock_login.side_effect = self.testmail.error
+        self.assertRaises(
+            exceptions.EmailError,
+            self.testmail.select_inbox,
+            'testuser',
+            'testpass'
+        )
 
     @mock.patch.object(retrievemail.email, 'message_from_bytes')
     @mock.patch.object(retrievemail.FetchMail, 'close')
@@ -68,20 +94,71 @@ class TestEmailMethods(unittest.TestCase):
         mock_fetch.assert_called_once_with(b'1', '(RFC822)')
         mock_message_from_bytes.assert_called_once_with('testmsg')
 
-    def test_save_attach(self):
-        """Test saving attachments from an email message."""
-        m = mock.mock_open()
-        with mock.patch('builtins.open', m, create=True):
-            paths = retrievemail.save_attachments(self.testmsg)
-        date = datetime.today().strftime("%Y-%m-%d-")
+        # fetch error
+        mock_fetch.side_effect = self.testmail.error
+        self.assertRaises(
+            exceptions.EmailError,
+            self.testmail.fetch_unread_messages,
+            'testuser',
+            'password'
+        )
 
+        # search error
+        mock_fetch.reset_mock()
+        mock_fetch.return_value = ('OK', [['', 'testmsg']])
+        mock_search.side_effect = self.testmail.error
+        self.assertRaises(
+            exceptions.EmailError,
+            self.testmail.fetch_unread_messages,
+            'testuser',
+            'password'
+        )
+
+    @mock.patch('builtins.open')
+    @mock.patch('attaskcreator.retrievemail.os.makedirs')
+    def test_save_attach(self, mock_makedirs, mock_open):
+        """Test saving attachments from an email message."""
+        date = datetime.today().strftime("%Y-%m-%d-")
         filename1 = date + 'atinterface.py'
         filename2 = date + 'README.md'
+        # test default
+        paths1 = retrievemail.save_attachments(self.testmsg)
         filepath1 = os.path.join('/tmp', filename1)
         filepath2 = os.path.join('/tmp', filename2)
-        m.assert_any_call(filepath1, 'wb')
-        m.assert_any_call(filepath2, 'wb')
-        self.assertListEqual([filepath1, filepath2], paths)
+        mock_open.assert_any_call(filepath1, 'wb')
+        mock_open.assert_any_call(filepath2, 'wb')
+        self.assertListEqual([filepath1, filepath2], paths1)
+
+        # test custom downdir
+        paths2 = retrievemail.save_attachments(self.testmsg,
+                                               '/tmp/downloads')
+        filepath3 = os.path.join('/tmp/downloads', filename1)
+        filepath4 = os.path.join('/tmp/downloads', filename2)
+        mock_open.assert_any_call(filepath3, 'wb')
+        mock_open.assert_any_call(filepath4, 'wb')
+        self.assertListEqual([filepath3, filepath4], paths2)
+        mock_makedirs.assert_any_call(mock.ANY)
+
+        # test open permission error
+        mock_file = mock.MagicMock()
+        mock_open.side_effect = (PermissionError, mock_file, PermissionError,
+                                 mock_file)
+        paths3 = retrievemail.save_attachments(self.testmsg, '/etc')
+        filepath5 = os.path.join('/tmp', filename1)
+        filepath6 = os.path.join('/tmp', filename2)
+        mock_open.assert_any_call(filepath5, 'wb')
+        mock_open.assert_any_call(filepath6, 'wb')
+        self.assertListEqual([filepath5, filepath6], paths3)
+
+        # test makedirs permission error
+        mock_open.side_effect = None
+        mock_makedirs.side_effect = PermissionError
+        paths4 = retrievemail.save_attachments(self.testmsg, '/etc/testdir')
+        filepath7 = os.path.join('/tmp', filename1)
+        filepath8 = os.path.join('/tmp', filename2)
+        mock_open.assert_any_call(filepath7, 'wb')
+        mock_open.assert_any_call(filepath8, 'wb')
+        self.assertListEqual([filepath7, filepath8], paths4)
 
     def test_get_msg_text(self):
         """Test getting message content."""
@@ -108,19 +185,24 @@ class TestEmailMethods(unittest.TestCase):
 
     def test_parse_to(self):
         """Test case for parse_to_field."""
-        self.assertListEqual(retrievemail.parse_to_field(
-            ', '.join(self.recips)),
-                             self.recip_dicts)
+        self.assertListEqual(
+            retrievemail.parse_to_field(', '.join(self.recips)),
+            self.recip_dicts
+        )
 
     def test_parse_recip(self):
         """Test case for parse_recipient."""
         for num, recip in enumerate(self.recips):
             with self.subTest(num=num, recip=recip):
-                self.assertDictEqual(retrievemail.parse_recipient(recip),
-                                     self.recip_dicts[num])
+                self.assertDictEqual(
+                    retrievemail.parse_recipient(recip),
+                    self.recip_dicts[num]
+                )
 
     @mock.patch('smtplib.SMTP')
     def test_send_msg(self, mock_smtp):
+        """Test message sending on failure."""
+        # success
         retrievemail.sendmsg(
             mock_smtp,
             ('test', 'password'),
@@ -136,3 +218,40 @@ class TestEmailMethods(unittest.TestCase):
             # i would prefer to pass an actual object but the unique ids make
             # that really annoying.
             mock.ANY)
+
+        # test bad params
+        self.assertRaises(
+            exceptions.EmailError,
+            retrievemail.sendmsg,
+            mock_smtp,
+            ('test', 'password'),
+            ('Barack Obama', 'bobama'),
+            ('Joe Biden', 'jbiden@whitehouse.gov'),
+            ('Hey Joe',
+             "Isn't it relaxing not to be governing anymore?")
+            )
+
+        self.assertRaises(
+            exceptions.EmailError,
+            retrievemail.sendmsg,
+            mock_smtp,
+            ('test', 'password'),
+            ('Barack Obama', 'bobama@whitehouse.gov'),
+            ('Joe Biden', 'jbiden'),
+            ('Hey Joe',
+             "Isn't it relaxing not to be governing anymore?")
+            )
+
+        # test bad server
+        mock_smtp.login.side_effect = smtplib.SMTPAuthenticationError(
+            code=1, msg='test')
+        self.assertRaises(
+            exceptions.EmailError,
+            retrievemail.sendmsg,
+            mock_smtp,
+            ('test', 'password'),
+            ('Barack Obama', 'bobama@whitehouse.gov'),
+            ('Joe Biden', 'jbiden@whitehouse.gov'),
+            ('Hey Joe',
+             "Isn't it relaxing not to be governing anymore?")
+        )

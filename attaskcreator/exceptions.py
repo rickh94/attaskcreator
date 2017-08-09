@@ -30,3 +30,8 @@ class RegexFailedError(Exception):
     phrase was in the search text.
     """
     pass
+
+
+class EmailError(Exception):
+    """Exception raised when there is a problem getting email."""
+    pass

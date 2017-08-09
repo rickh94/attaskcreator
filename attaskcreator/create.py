@@ -4,6 +4,7 @@ import datetime
 import re
 import logging
 import daiquiri
+import socket
 from smtplib import SMTP
 from attaskcreator.config import Settings
 from attaskcreator import retrievemail
@@ -56,23 +57,26 @@ def main():
     settings = Settings()
     settings.setup_log()
     logger = daiquiri.getLogger(__name__)
+
     try:
         settings.setup_all()
     except exceptions.ConfigError:
         logging.exception("The configuration files are not valid. Details:")
         raise SystemExit(1)
 
-    mail = retrievemail.FetchMail(
-        settings.eml_imap_server
-        )
-    messages = mail.fetch_unread_messages(settings.eml_username,
-                                          settings.eml_pwd)
+    try:
+        mail = retrievemail.FetchMail(settings.eml_imap_server)
+        messages = mail.fetch_unread_messages(settings.eml_username,
+                                              settings.eml_pwd)
+    except exceptions.EmailError:
+        logging.exception("There was a problem retrieving email: ")
+        raise SystemExit(1)
+
     atdb = settings.database
 
     # loop through email messages
     for mess in messages:
         data = retrievemail.read_msg_info(mess)
-
         try:
             parsed_text = parse_email_message(
                 (settings.trigger_phrases, settings.term_char), data['body']
@@ -137,13 +141,18 @@ def main():
                     + 'Subject: {}\n'.format(data['subject'])
                     + data['body']
                     )
-            retrievemail.sendmsg(
-                SMTP(settings.eml_smtp_server, 587),
-                (settings.eml_username, settings.eml_pwd),
-                ('Airtable Task Creator', settings.eml_username),
-                ('User', settings.eml_error),
-                (subject, body)
-                )
+            try:
+                retrievemail.sendmsg(
+                    SMTP(settings.eml_smtp_server, 587),
+                    (settings.eml_username, settings.eml_pwd),
+                    ('Airtable Task Creator', settings.eml_username),
+                    ('User', settings.eml_error),
+                    (subject, body)
+                    )
+            except socket.gaierror:
+                logging.exception("Problem creating smtp connection: ")
+            except exceptions.EmailError:
+                logging.exception("Problem sending failure email: ")
 
 
 if __name__ == "__main__":

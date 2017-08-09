@@ -1,13 +1,18 @@
 # retrieve_mail.py - get and process email for gmailtoairtable
+import atexit
 import email
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import os
 import imaplib
+import logging
+import socket
 import datetime
 import daiquiri
+import smtplib
 from html2text import html2text
 from nameparser import HumanName
+from attaskcreator import exceptions
 
 
 # this is going to be a pain to test.
@@ -16,29 +21,40 @@ class FetchMail(imaplib.IMAP4_SSL):
 
     def select_inbox(self, username, password):
         """Select email from Inbox."""
-        logger = daiquiri.getLogger(__name__)
-        logger.info("Started select_inbox")
-        self.login(username, password)
-        self.select('Inbox')
+        try:
+            self.login(username, password)
+        except self.error:
+            raise exceptions.EmailError(
+                "There was a problem with login credentials.")
+
+        result, message = self.select('Inbox')
+        if result == 'NO':
+            raise exceptions.EmailError(
+                "Could not find mailbox: {}".format(message))
 
     def fetch_unread_messages(self, username, password):
         """Gets unread messages from Inbox."""
         self.select_inbox(username, password)
         emails = []
-        result, messages = self.search(None, 'UnSeen')
+        try:
+            result, messages = self.search(None, 'UnSeen')
+        except self.error as e:
+            raise exceptions.EmailError(
+                'Could not get unread messages: {}'.format(e))
         if result == 'OK':
             for message in messages[0].split():
                 try:
                     _, data = self.fetch(message, '(RFC822)')
-                except Exception:
-                    print("No new emails to read.")
+                except self.error as e:
                     self.close()
-                    raise SystemExit(0)
+                    raise exceptions.EmailError(
+                        "Something went wrong getting a message: {}".format(e))
                 msg = email.message_from_bytes(data[0][1])
                 if not isinstance(msg, str):
                     emails.append(msg)
 
             return emails
+        atexit.register(self.close)
 
         return None
 
@@ -56,6 +72,8 @@ def save_attachments(msg, download_dir="/tmp"):
         try:
             os.makedirs(download_dir)
         except PermissionError:
+            logging.exception("Using /tmp because of PermissionError in "
+                              "download_dir: ")
             download_dir = "/tmp"
 
     paths = []
@@ -70,9 +88,13 @@ def save_attachments(msg, download_dir="/tmp"):
         app_date = datetime.datetime.today()
         filename = app_date.strftime("%Y-%m-%d-") + part.get_filename()
         att_path = os.path.join(download_dir, filename)
-        with open(att_path, 'wb') as thisfile:
-            thisfile.write(part.get_payload(decode=True))
-
+        try:
+            with open(att_path, 'wb') as thisfile:
+                thisfile.write(part.get_payload(decode=True))
+        except PermissionError:
+            att_path = os.path.join('/tmp', filename)
+            with open(att_path, 'wb') as thisfile:
+                thisfile.write(part.get_payload(decode=True))
         paths.append(att_path)
 
     return paths
@@ -127,8 +149,6 @@ def parse_recipient(recipient):
         'email': email_addr,
     }
 
-# this test needs to be written. mock a bunch of stuff
-
 
 def sendmsg(server, login_info, from_info, to_info, message):
     """This basically wraps smtplib.SMTP.sendmail to configure a few options
@@ -140,6 +160,12 @@ def sendmsg(server, login_info, from_info, to_info, message):
     and to.
     message is a tuple of subject and body text.
     """
+    if '@' not in from_info[1]:
+        raise exceptions.EmailError(
+            "From address is not valid for retrievemail.sendmsg")
+    if '@' not in to_info[1]:
+        raise exceptions.EmailError(
+            "To address is not valid for retrievemail.sendmsg")
     from_eml = email.utils.formataddr(from_info)
     to_eml = email.utils.formataddr(to_info)
     eml, pwd = login_info
@@ -147,7 +173,11 @@ def sendmsg(server, login_info, from_info, to_info, message):
 
     # login to server
     server.starttls()
-    server.login(eml, pwd)
+    try:
+        server.login(eml, pwd)
+    except smtplib.SMTPAuthenticationError as err:
+        raise exceptions.EmailError(
+            'Could not log in to smtp server: {}'.format(err))
 
     # assemble message
     msg = MIMEMultipart()
