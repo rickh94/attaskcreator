@@ -58,3 +58,4 @@ def task(**kwargs):
                       as_user=True,
                       )
     return slackin.response("A record was created and you message was sent.")
+    people, new_text = findpeople(text)
