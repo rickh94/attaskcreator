@@ -32,6 +32,9 @@ setup(
         'nameparser',
         'boto3',
         'daiquiri',
+        'flask',
+        'flask_slack',
+        'slackclient',
         ],
 
     entry_points={
