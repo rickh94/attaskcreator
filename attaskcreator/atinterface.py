@@ -113,6 +113,7 @@ class MyDatabase(Airtable):
 
         try:
             self.create(table_name, data)
+            # TODO: make custom exception and propogate up
         except AttributeError:
             logging.exception(("Could not create record. Check database "
                                "id, API key and table name. Traceback "
