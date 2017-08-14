@@ -7,6 +7,7 @@ from attaskcreator import settings
 from attaskcreator.atinterface import MyDatabase
 from attaskcreator import exceptions
 
+# Start using flask.g for storing configuration
 
 def setattrs(_self, **kwargs):
     """Quickly set multiple attributes from key value pairs)."""
