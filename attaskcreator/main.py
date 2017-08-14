@@ -27,8 +27,10 @@ def task(**kwargs):
     # returns an array of SlackPerson objects
     people, parse_text = findpeople(text)
     people_rec_ids = []
+    all_users = slackout.api_call('users.list')
     for person in people:
-        person.get_info()
+        person.get_slack_id(all_users)
+        person.get_info(slackout)
         # at some point set g to the database (start using g in config.py)
         person_rec = g.atdb.search_for_email(person.email)
         people_rec_ids.append(person_rec)
