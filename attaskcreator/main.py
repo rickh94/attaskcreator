@@ -25,7 +25,7 @@ slackout = SlackClient(os.environ['SLACK_API_TOKEN'])
 def task(**kwargs):
     text = kwargs.get('text')
     # returns an array of SlackPerson objects
-    people, echo_text, parse_text = findpeople(text)
+    people, parse_text = findpeople(text)
     people_rec_ids = []
     for person in people:
         person.get_info()
