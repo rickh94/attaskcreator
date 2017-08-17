@@ -10,6 +10,7 @@ from attaskcreator import exceptions
 
 # Start using flask.g for storing configuration
 
+<<<<<<< HEAD
 class Settings(object):
     """Sets the various configuration options for attaskcreator."""
     def __init__(self):
