@@ -17,6 +17,5 @@ install:
 
 script: pytest --cov=attaskcreator tests/
 
-after_sucess:
-  - coverage xml
+after_success:
   - codecov
