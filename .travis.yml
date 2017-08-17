@@ -10,6 +10,7 @@ before_install:
   - pip install codecov
   - pip install pytest
   - pip install pytest-cov
+  - pip install coverage
   - pip install -r requirements.txt
 install:
   - pip install .
@@ -17,4 +18,5 @@ install:
 script: pytest --cov=attaskcreator tests/
 
 after_sucess:
+  - coverage xml
   - codecov
