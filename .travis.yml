@@ -13,7 +13,7 @@ before_install:
 install:
   - pip install .
   - pip install -r requirements.txt
-script: pytest --cov=attaskcreator
+script: pytest --cov=attaskcreator tests/
 
 after_sucess:
   - codecov
