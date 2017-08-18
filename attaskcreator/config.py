@@ -8,7 +8,7 @@ from attaskcreator import settings
 from attaskcreator.atinterface import MyDatabase
 from attaskcreator import exceptions
 
-# Start using flask.g for storing configuration
+# TODO: Start using flask.g for storing configuration
 
 class Settings(object):
     """Sets the various configuration options for attaskcreator."""
