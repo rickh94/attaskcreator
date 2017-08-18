@@ -13,7 +13,7 @@ from attaskcreator import exceptions
 app = flask.Flask(__name__)
 app.config.from_object(__name__)
 
-TODO: These objects need to move
+# TODO: These objects need to move
 slackin = Slack(app)
 mytoken = os.environ['SLACK_VER_TOKEN']
 myid = os.environ['TEAM_ID']
