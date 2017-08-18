@@ -10,9 +10,11 @@ from attaskcreator import exceptions
 
 # TODO: Start using flask.g for storing configuration
 
+
 class Settings(object):
     """Sets the various configuration options for attaskcreator."""
     def __init__(self, path_prefix="/etc/attaskcreator"):
+>>>>>>> wrote more supporting methods. complicated
         """Read the configuration files."""
         self.login = configparser.ConfigParser()
         self.tables = configparser.ConfigParser()

@@ -19,3 +19,4 @@ scratch
 venv
 *.egg-info
 .ropeproject
+.coverage

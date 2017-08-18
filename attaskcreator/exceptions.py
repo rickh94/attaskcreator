@@ -35,3 +35,13 @@ class RegexFailedError(Exception):
 class EmailError(Exception):
     """Exception raised when there is a problem getting email."""
     pass
+
+
+
+class NoMentionsError(Exception):
+    """Raised if no one was mentioned in the original text."""
+    pass
+
+class FailedToCreateError(Exception):
+    """Raised if it attempts to create a record and fails."""
+    pass
