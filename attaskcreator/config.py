@@ -10,16 +10,20 @@ from attaskcreator import exceptions
 
 # TODO: Start using flask.g for storing configuration
 
+
 class Settings(object):
     """Sets the various configuration options for attaskcreator."""
-    def __init__(self):
+    def __init__(self,
+                 loginpath="/etc/attaskcreator/login.conf",
+                 tablespath="/etc/attaskcreator/tables.conf",
+                 phrasespath="/etc/attaskcreator/tables.conf"):
         """Read the configuration files."""
         self.login = configparser.ConfigParser()
         self.tables = configparser.ConfigParser()
         try:
-            self.login.read("/etc/attaskcreator/login.conf")
-            self.tables.read("/etc/attaskcreator/tables.conf")
-            with open("/etc/attaskcreator/phrases.conf", "r") as f:
+            self.login.read(loginpath)
+            self.tables.read(tablespath)
+            with open(phrasespath, "r") as f:
                 self.phrases = f.readlines()
         except OSError:
             logging.exception(
