@@ -7,9 +7,7 @@ python:
   - "pypy3"
 
 env:
-  - SLACK_VER_TOKEN='foo'
-  - TEAM_ID='123456'
-  - SLACK_API_TOKEN='bar
+  - SLACK_VER_TOKEN='foo' TEAM_ID='123456' SLACK_API_TOKEN='bar'
 
 before_install:
   - pip install codecov
