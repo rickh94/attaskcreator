@@ -1,11 +1,13 @@
 """Main functions for attaskcreator."""
-# import json
+import argparse
 import datetime
-import re
 import logging
-import daiquiri
-import socket
+import re
 from smtplib import SMTP
+import socket
+
+import daiquiri
+
 from attaskcreator.config import Settings
 from attaskcreator import retrievemail
 from attaskcreator import s3interface
@@ -54,6 +56,15 @@ def parse_email_message(params, text_to_search):
 def main():
     """Main function for attaskcreator."""
     # setup
+    parser = argparse.ArgumentParser(
+        prog='attaskcreator',
+        description='Start attaskcreator email pull',
+    )
+
+    parser.add_argument('-c', '--config-prefix',
+                        help=('Specify a folder where the configuration files'
+                              ' are kept.')
+                        )
     settings = Settings()
     settings.setup_log()
     logger = daiquiri.getLogger(__name__)

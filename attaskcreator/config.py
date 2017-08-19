@@ -11,14 +11,14 @@ from attaskcreator import exceptions
 
 class Settings(object):
     """Sets the various configuration options for attaskcreator."""
-    def __init__(self):
+    def __init__(self, path_prefix="/etc/attaskcreator"):
         """Read the configuration files."""
         self.login = configparser.ConfigParser()
         self.tables = configparser.ConfigParser()
         try:
-            self.login.read("/etc/attaskcreator/login.conf")
-            self.tables.read("/etc/attaskcreator/tables.conf")
-            with open("/etc/attaskcreator/phrases.conf", "r") as f:
+            self.login.read(os.path.join(path_prefix, login))
+            self.tables.read(os.path.join(path_prefix, tables))
+            with open(os.path.join(path_prefix, phrases), "r") as f:
                 self.phrases = f.readlines()
         except OSError:
             logging.exception(
