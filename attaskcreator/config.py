@@ -19,7 +19,7 @@ class Settings(object):
             self.login.read(os.path.join(path_prefix, 'login'))
             self.tables.read(os.path.join(path_prefix, 'tables'))
             with open(os.path.join(path_prefix, 'phrases'), "r") as f:
-                self.trigger_phrases = f.readlines()
+                self.all_phrases = f.readlines()
         except OSError:
             logging.exception(
                 'Could not open config files. Traceback Follows:')
@@ -57,7 +57,7 @@ class Settings(object):
         """Sets up the trigger phrases and termination character for
         attaskcreator.
         """
-        self.phrases = list(map(lambda x: x.strip(), self.phrases))
+        self.trigger_phrases = list(map(lambda x: x.strip(), self.all_phrases))
         self.term_char = self.tables['Parse']['termination character']
 
     def setup_aws(self):
