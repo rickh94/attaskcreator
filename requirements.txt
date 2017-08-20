@@ -1,5 +1,4 @@
 airtable==0.3.1
-<<<<<<< HEAD
 boto3==1.4.6
 botocore==1.6.3
 certifi==2017.7.27.1
