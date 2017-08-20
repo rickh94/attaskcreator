@@ -61,11 +61,18 @@ def main():
         description='Start attaskcreator email pull',
     )
 
-    parser.add_argument('-c', '--config-prefix',
+    parser.add_argument('-p', '--config-prefix',
                         help=('Specify a folder where the configuration files'
                               ' are kept.')
                         )
-    settings = Settings()
+
+    args = parser.parse_args()
+
+    if args.config_prefix:
+        settings = Settings(str(args.config_prefix))
+    else:
+        settings = Settings()
+
     settings.setup_log()
     logger = daiquiri.getLogger(__name__)
 
