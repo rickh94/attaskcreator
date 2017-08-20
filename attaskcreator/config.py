@@ -16,9 +16,9 @@ class Settings(object):
         self.login = configparser.ConfigParser()
         self.tables = configparser.ConfigParser()
         try:
-            self.login.read(os.path.join(path_prefix, login))
-            self.tables.read(os.path.join(path_prefix, tables))
-            with open(os.path.join(path_prefix, phrases), "r") as f:
+            self.login.read(os.path.join(path_prefix, 'login'))
+            self.tables.read(os.path.join(path_prefix, 'tables'))
+            with open(os.path.join(path_prefix, 'phrases'), "r") as f:
                 self.phrases = f.readlines()
         except OSError:
             logging.exception(
