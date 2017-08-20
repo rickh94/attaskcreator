@@ -19,7 +19,7 @@ class Settings(object):
             self.login.read(os.path.join(path_prefix, 'login'))
             self.tables.read(os.path.join(path_prefix, 'tables'))
             with open(os.path.join(path_prefix, 'phrases'), "r") as f:
-                self.phrases = f.readlines()
+                self.trigger_phrases = f.readlines()
         except OSError:
             logging.exception(
                 'Could not open config files. Traceback Follows:')
