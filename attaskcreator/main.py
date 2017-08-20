@@ -2,7 +2,6 @@ import os
 import flask
 from flask import g
 import re
-import json
 from flask_slack import Slack
 from slackclient import SlackClient
 from attaskcreator import atinterface
