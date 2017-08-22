@@ -1,6 +1,8 @@
 """Configure attaskcreator."""
+import ast
 import configparser
 import atexit
+import re
 import os
 import logging
 import daiquiri
@@ -58,7 +60,12 @@ class Settings(object):
         attaskcreator.
         """
         self.trigger_phrases = list(map(lambda x: x.strip(), self.all_phrases))
-        self.term_char = self.tables['Parse']['termination character']
+        try:
+            self.term_char = ast.literal_eval(
+                self.tables['Parse']['termination character'])
+        except (SyntaxError, ValueError):
+            self.term_char = re.escape(
+                self.tables['Parse']['termination character'])
 
     def setup_aws(self):
         """Sets up AWS access info and bucket. If running hosted in AWS this

@@ -1,5 +1,6 @@
 """Main functions for attaskcreator."""
 import argparse
+import ast
 import datetime
 import logging
 import re
@@ -34,8 +35,10 @@ def parse_email_message(params, text_to_search):
     text_to_search: self-explanatory.
     """
     phrases, term_char = params
+    # allow newline, etc. specification in config file
+    # term_char = ast.literal_eval(term_char)
     # delete after term_char
-    truncate = re.compile(r'^(.*){}'.format(re.escape(term_char)), re.DOTALL)
+    truncate = re.compile(r'^(.*){}'.format(term_char), re.DOTALL)
     search_text = truncate.search(text_to_search)
     try:
         trunc_text = search_text.group(1)

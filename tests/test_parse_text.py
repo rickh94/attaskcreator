@@ -45,10 +45,13 @@ class TestParseText(unittest.TestCase):
     @mock.patch('attaskcreator.create.choose_phrase')
     def test_parse_message(self, mock_choose_phrase):
         """Test for parse email message."""
+        # NOTE: term_chars are now either literals or escaped in
+        # config.Settings.setup_phrases. They will need to be escaped properly
+        # in the tests.
         mock_choose_phrase.return_value = 'Can you please'
         self.assertEqual(
             create.parse_email_message(
-                (PHRASES, '?'),
+                (PHRASES, '\?'),
                 'Can you please return this?'),
             'return this'
             )
@@ -60,7 +63,7 @@ class TestParseText(unittest.TestCase):
         # test with newlines
         self.assertEqual(
             create.parse_email_message(
-                (PHRASES, '?'),
+                (PHRASES, '\?'),
                 ('---Begin Forwarded Message---\n'
                  'This is a test.\n'
                  'Can you please\nreturn this?')),
@@ -93,7 +96,7 @@ class TestParseText(unittest.TestCase):
         self.assertRaises(
             exceptions.RegexFailedError,
             create.parse_email_message,
-            (PHRASES, '?'),
+            (PHRASES, '\?'),
             'Would you please?',
             )
         mock_choose_phrase.assert_called_once_with(
@@ -107,7 +110,18 @@ class TestParseText(unittest.TestCase):
         self.assertRaises(
             exceptions.NoPhraseError,
             create.parse_email_message,
-            (PHRASES, '?'),
+            (PHRASES, '\?'),
+            'This returns nothing?'
+            )
+        mock_choose_phrase.assert_called_once_with(
+            PHRASES, 'This returns nothing'
+            )
+
+        # fail to get termchar, exception should propogate up
+        self.assertRaises(
+            exceptions.RegexFailedError,
+            create.parse_email_message,
+            (PHRASES, '8888'),
             'This returns nothing?'
             )
         mock_choose_phrase.assert_called_once_with(

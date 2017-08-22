@@ -166,9 +166,10 @@ class TestEmailMethods(unittest.TestCase):
             retrievemail.get_msg_text(self.testmsg),
             r'.*?This is a test email\..*?')
 
+    # rewrite this test
     @mock.patch('attaskcreator.retrievemail.get_msg_text')
-    @mock.patch('attaskcreator.retrievemail.html2text')
-    def test_read_msg_info(self, mock_html2text, mock_get_msg):
+    @mock.patch('attaskcreator.retrievemail.bs4')
+    def test_read_msg_info(self, mock_bs4, mock_get_msg):
         """Test reading a message's info."""
         testmsg = {
             'from': 'test@example.com',
@@ -181,7 +182,7 @@ class TestEmailMethods(unittest.TestCase):
         assert set(testmsg.items()).issubset(set(test_return.items()))
         # assert method calls
         mock_get_msg.assert_called_once_with(testmsg)
-        assert mock_html2text.called
+        assert mock_bs4.BeautifulSoup.called
 
     def test_parse_to(self):
         """Test case for parse_to_field."""

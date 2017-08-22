@@ -32,6 +32,7 @@ setup(
         'nameparser',
         'boto3',
         'daiquiri',
+        'bs4',
         ],
 
     entry_points={
