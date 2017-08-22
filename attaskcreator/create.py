@@ -30,16 +30,25 @@ def parse_email_message(params, text_to_search):
     """Returns text found between a prefix and terminating character or None
     if it is not found.
 
-    params: tuple of prefix phrase and terminating character.
+    params: tuple of prefix phrase and terminating character(s).
     text_to_search: self-explanatory.
     """
     phrases, term_char = params
-    # will raise exception if nothing found, propogates to main.
-    trigger_phrase = choose_phrase(phrases, text_to_search)
+    # delete after term_char
+    truncate = re.compile(r'^(.*){}'.format(re.escape(term_char)), re.DOTALL)
+    search_text = truncate.search(text_to_search)
+    try:
+        trunc_text = search_text.group(1)
+    except (AttributeError):
+        raise exceptions.RegexFailedError(
+            'Could not find {tc} in {st}'.format(tc=term_char,
+                                                 st=text_to_search))
     # clean text_to_search
-    text_oneline = text_to_search.replace('\n', ' ')
+    text_oneline = trunc_text.replace('\n', ' ')
     text_clean = ' '.join(text_oneline.split())
-    regex = re.compile(r'({} )([^{}]*)'.format(trigger_phrase, term_char),
+    # will raise exception if nothing found, propogates to main.
+    trigger_phrase = choose_phrase(phrases, text_clean)
+    regex = re.compile(r'({} )(.*)'.format(re.escape(trigger_phrase)),
                        re.IGNORECASE
                        )
     found_text = regex.search(text_clean)
@@ -47,7 +56,7 @@ def parse_email_message(params, text_to_search):
         return found_text.group(2)
     except AttributeError:
         raise exceptions.RegexFailedError(('Could not find text after {tp} in'
-                                           ' after {st}').format(
+                                           ' {st}').format(
                                                tp=trigger_phrase,
                                                st=text_clean
                                            ))

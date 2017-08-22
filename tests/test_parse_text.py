@@ -53,7 +53,7 @@ class TestParseText(unittest.TestCase):
             'return this'
             )
         mock_choose_phrase.assert_called_once_with(
-            PHRASES, 'Can you please return this?'
+            PHRASES, 'Can you please return this'
             )
         mock_choose_phrase.reset_mock()
 
@@ -66,9 +66,25 @@ class TestParseText(unittest.TestCase):
                  'Can you please\nreturn this?')),
             'return this')
         mock_choose_phrase.assert_called_once_with(
-            PHRASES, ('---Begin Forwarded Message---\n'
-                      'This is a test.\n'
-                      'Can you please\nreturn this?')
+            PHRASES, ('---Begin Forwarded Message--- '
+                      'This is a test. '
+                      'Can you please return this')
+            )
+        mock_choose_phrase.reset_mock()
+
+        # test with signature as termination
+        self.assertEqual(
+            create.parse_email_message(
+                (PHRASES, '\ndh'),
+                ('---Begin Forwarded Message---\n'
+                 'This is a test.\n'
+                 'Can you please\nreturn this?\ndh')),
+            'return this?')
+
+        mock_choose_phrase.assert_called_once_with(
+            PHRASES, ('---Begin Forwarded Message--- '
+                      'This is a test. '
+                      'Can you please return this?')
             )
         mock_choose_phrase.reset_mock()
 
@@ -81,7 +97,7 @@ class TestParseText(unittest.TestCase):
             'Would you please?',
             )
         mock_choose_phrase.assert_called_once_with(
-            PHRASES, 'Would you please?'
+            PHRASES, 'Would you please'
             )
         mock_choose_phrase.reset_mock()
 
@@ -95,5 +111,5 @@ class TestParseText(unittest.TestCase):
             'This returns nothing?'
             )
         mock_choose_phrase.assert_called_once_with(
-            PHRASES, 'This returns nothing?'
+            PHRASES, 'This returns nothing'
             )
