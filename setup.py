@@ -36,6 +36,7 @@ setup(
         'flask_slack',
         'slackclient',
         'slackperson',
+        'slackmentions',
         ],
 
     entry_points={
