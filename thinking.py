@@ -65,6 +65,7 @@ def echo_back(**kwargs):
 
     # implement this at some point
     file_info = ()
+    # actual record creation
     settings.database.create_task_record(
         settings.at_tasks_table,
         (settings.tasks_table_text, clean_text),
