@@ -148,6 +148,7 @@ class MyDatabaseTest(unittest.TestCase):
                                            'test text field': 'my test text',
                                            'test person field':
                                            ['rec123456789'],
+                                           'Before leaving work': True,
                                        })
         # tests with some fields
         self.assertIsNone(
@@ -161,6 +162,7 @@ class MyDatabaseTest(unittest.TestCase):
         mock_create.assert_called_with('test table2',
                                        {
                                            'test text field': 'my test text',
+                                           'Before leaving work': True,
                                            'test person field':
                                            ['rec123456789'],
                                            'test attachments field':
@@ -180,6 +182,7 @@ class MyDatabaseTest(unittest.TestCase):
                                            'test text field': 'my test text',
                                            'test person field':
                                            ['rec123456789'],
+                                           'Before leaving work': True,
                                            'test notes field':
                                            'these are some notes',
                                        })
@@ -198,6 +201,7 @@ class MyDatabaseTest(unittest.TestCase):
                                            'test text field': 'my test text',
                                            'test person field':
                                            ['rec123456789'],
+                                           'Before leaving work': True,
                                            'test notes field':
                                            'this is the full\n body of the'
                                            + ' email',
@@ -220,6 +224,7 @@ class MyDatabaseTest(unittest.TestCase):
                                            'my second test text',
                                            'test person field':
                                            ['rec123456789'],
+                                           'Before leaving work': True,
                                            'test attachments field':
                                            ['rec0009987'],
                                        })
@@ -238,6 +243,7 @@ class MyDatabaseTest(unittest.TestCase):
                                            'test text field': 'my test text',
                                            'test person field':
                                            ['rec123456789', 'rec012345678'],
+                                           'Before leaving work': True,
                                            'test notes field':
                                            'this is the full\n body of the'
                                            + ' email',
