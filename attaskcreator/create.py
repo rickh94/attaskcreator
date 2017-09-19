@@ -153,13 +153,16 @@ def main():
             if settings.tasks_table_notes is not None:
                 notes_info = (settings.tasks_table_notes, data['body'])
 
+            logger.info('sender info is {}'.format(data['from']))
+            logger.info('add info is {}'.format(data))
             # pass to record method for creation
             atdb.create_task_record(
                 settings.at_tasks_table,
                 (settings.tasks_table_text, parsed_text),
                 (settings.tasks_table_person, people),
                 notes_info,
-                file_info
+                file_info,
+                sender_info=data['from'],
                 )
         except (exceptions.RegexFailedError, exceptions.NoPhraseError):
             logger.exception("No record was created.")

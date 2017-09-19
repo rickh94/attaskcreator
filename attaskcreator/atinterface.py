@@ -114,10 +114,13 @@ class MyDatabase(Airtable):
                 attach_id = [attach_id]
             data[attach_field] = attach_id
 
-        if 'dhenry@curetoday.com' in sender_info:
-            data['Type'] = 'Task (MJH)'
-        elif 'donhenryiii' in sender_info:
-            data['Type'] = 'Personal'
+        if 'dhenry@curetoday.com' in sender_info.lower():
+            data['Type'] = ['Task (MJH)']
+        elif 'donhenryiii' in sender_info.lower():
+            data['Type'] = ['Personal']
+        else:
+            logger = daiquiri.getLogger(__name__)
+            logger.error("problem setting type: {}".format(sender_info))
 
         try:
             self.create(table_name, data)
