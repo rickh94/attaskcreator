@@ -33,6 +33,7 @@ setup(
         'boto3',
         'daiquiri',
         'bs4',
+        'arrow',
         ],
 
     entry_points={

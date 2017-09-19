@@ -78,7 +78,8 @@ class MyDatabase(Airtable):
         return rec_id
 
     def create_task_record(self, table_name, text_fielddata, person_fielddata,
-                           notes_fielddata=(), attach_fielddata=()):
+                           notes_fielddata=(), attach_fielddata=(),
+                           sender_info=''):
         """Creates a linked record in a tasks table from data collected from an
         email.
 
@@ -99,6 +100,8 @@ class MyDatabase(Airtable):
         data = {
             text_field: text,
             person_field: people,
+            # before leaving work will be hard coded
+            "Before leaving work": True,
         }
         # check optional parameters
         if notes_fielddata:
@@ -110,6 +113,11 @@ class MyDatabase(Airtable):
             if not isinstance(attach_id, list):
                 attach_id = [attach_id]
             data[attach_field] = attach_id
+
+        if 'dhenry@curetoday.com' in sender_info:
+            data['Type'] = 'Task (MJH)'
+        elif 'donhenryiii' in sender_info:
+            data['Type'] = 'Personal'
 
         try:
             self.create(table_name, data)
