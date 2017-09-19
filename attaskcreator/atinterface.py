@@ -121,7 +121,7 @@ class MyDatabase(Airtable):
             data[attach_field] = attach_id
 
         for item in sender_filter:
-            if item[0] in sender_info:
+            if item[0].lower() in sender_info.lower():
                 data['Type'] = [item[1]]
                 break
 
