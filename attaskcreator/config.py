@@ -66,6 +66,8 @@ class Settings(object):
         except (SyntaxError, ValueError):
             self.term_char = re.escape(
                 self.tables['Parse']['termination character'])
+        self.sender_filter = ast.literal_eval(
+            self.tables['Parse']['sender filter'])
 
     def setup_aws(self):
         """Sets up AWS access info and bucket. If running hosted in AWS this

@@ -162,6 +162,7 @@ def main():
                 (settings.tasks_table_person, people),
                 notes_info,
                 file_info,
+                sender_filter=settings.sender_filter,
                 sender_info=data['from'],
                 )
         except (exceptions.RegexFailedError, exceptions.NoPhraseError):

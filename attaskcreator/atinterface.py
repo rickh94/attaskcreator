@@ -79,7 +79,7 @@ class MyDatabase(Airtable):
 
     def create_task_record(self, table_name, text_fielddata, person_fielddata,
                            notes_fielddata=(), attach_fielddata=(),
-                           sender_info=''):
+                           sender_filter=[], sender_info=''):
         """Creates a linked record in a tasks table from data collected from an
         email.
 
@@ -89,6 +89,8 @@ class MyDatabase(Airtable):
 
         All _fielddata arguments are tuples of a field name and the data for
         that field. Unspecified fields default to empty tuple.
+        sender_filter is a list of two tuples matching a sender and a data for
+        the type field.
         """
         text_field, text = text_fielddata
         person_field, people = person_fielddata
@@ -96,6 +98,10 @@ class MyDatabase(Airtable):
         if not isinstance(people, list):
             people = [people]
 
+        if (sender_info and not sender_filter) or\
+                (sender_filter and not sender_info):
+            raise AttributeError("sender_info and sender_filter must occur "
+                                 "together")
         # data for record
         data = {
             text_field: text,
@@ -114,13 +120,10 @@ class MyDatabase(Airtable):
                 attach_id = [attach_id]
             data[attach_field] = attach_id
 
-        if 'dhenry@curetoday.com' in sender_info.lower():
-            data['Type'] = ['Task (MJH)']
-        elif 'donhenryiii' in sender_info.lower():
-            data['Type'] = ['Personal']
-        else:
-            logger = daiquiri.getLogger(__name__)
-            logger.error("problem setting type: {}".format(sender_info))
+        for item in sender_filter:
+            if item[0] in sender_info:
+                data['Type'] = [item[1]]
+                break
 
         try:
             self.create(table_name, data)
