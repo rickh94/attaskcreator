@@ -38,7 +38,7 @@ def parse_email_message(params, text_to_search):
     # allow newline, etc. specification in config file
     # term_char = ast.literal_eval(term_char)
     # delete after term_char
-    truncate = re.compile(r'^(.*){}'.format(term_char), re.DOTALL)
+    truncate = re.compile(r'^(.*){}'.format(term_char), re.DOTALL|re.I)
     search_text = truncate.search(text_to_search)
     try:
         trunc_text = search_text.group(1)

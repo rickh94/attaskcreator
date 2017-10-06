@@ -60,6 +60,18 @@ class TestParseText(unittest.TestCase):
             )
         mock_choose_phrase.reset_mock()
 
+        mock_choose_phrase.return_value = 'Can you please'
+        self.assertEqual(
+            create.parse_email_message(
+                (PHRASES, '\ndh'),
+                'Can you please return this?\nDh'),
+            'return this?'
+            )
+        mock_choose_phrase.assert_called_once_with(
+            PHRASES, 'Can you please return this?'
+            )
+        mock_choose_phrase.reset_mock()
+
         # test with newlines
         self.assertEqual(
             create.parse_email_message(
