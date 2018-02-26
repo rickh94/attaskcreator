@@ -1,5 +1,6 @@
 """Main functions for attaskcreator."""
 import argparse
+import ast
 import datetime
 import logging
 import re
@@ -30,16 +31,27 @@ def parse_email_message(params, text_to_search):
     """Returns text found between a prefix and terminating character or None
     if it is not found.
 
-    params: tuple of prefix phrase and terminating character.
+    params: tuple of prefix phrase and terminating character(s).
     text_to_search: self-explanatory.
     """
     phrases, term_char = params
-    # will raise exception if nothing found, propogates to main.
-    trigger_phrase = choose_phrase(phrases, text_to_search)
+    # allow newline, etc. specification in config file
+    # term_char = ast.literal_eval(term_char)
+    # delete after term_char
+    truncate = re.compile(r'^(.*){}'.format(term_char), re.DOTALL|re.I)
+    search_text = truncate.search(text_to_search)
+    try:
+        trunc_text = search_text.group(1)
+    except (AttributeError):
+        raise exceptions.RegexFailedError(
+            'Could not find {tc} in {st}'.format(tc=term_char,
+                                                 st=text_to_search))
     # clean text_to_search
-    text_oneline = text_to_search.replace('\n', ' ')
+    text_oneline = trunc_text.replace('\n', ' ')
     text_clean = ' '.join(text_oneline.split())
-    regex = re.compile(r'({} )([^{}]*)'.format(trigger_phrase, term_char),
+    # will raise exception if nothing found, propogates to main.
+    trigger_phrase = choose_phrase(phrases, text_clean)
+    regex = re.compile(r'({} )(.*)'.format(re.escape(trigger_phrase)),
                        re.IGNORECASE
                        )
     found_text = regex.search(text_clean)
@@ -47,7 +59,7 @@ def parse_email_message(params, text_to_search):
         return found_text.group(2)
     except AttributeError:
         raise exceptions.RegexFailedError(('Could not find text after {tp} in'
-                                           ' after {st}').format(
+                                           ' {st}').format(
                                                tp=trigger_phrase,
                                                st=text_clean
                                            ))
@@ -141,13 +153,17 @@ def main():
             if settings.tasks_table_notes is not None:
                 notes_info = (settings.tasks_table_notes, data['body'])
 
+            logger.info('sender info is {}'.format(data['from']))
+            logger.info('add info is {}'.format(data))
             # pass to record method for creation
             atdb.create_task_record(
                 settings.at_tasks_table,
                 (settings.tasks_table_text, parsed_text),
                 (settings.tasks_table_person, people),
                 notes_info,
-                file_info
+                file_info,
+                sender_filter=settings.sender_filter,
+                sender_info=data['from'],
                 )
         except (exceptions.RegexFailedError, exceptions.NoPhraseError):
             logger.exception("No record was created.")

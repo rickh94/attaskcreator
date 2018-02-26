@@ -9,8 +9,8 @@ import logging
 import socket
 import datetime
 import daiquiri
+import bs4
 import smtplib
-from html2text import html2text
 from nameparser import HumanName
 from attaskcreator import exceptions
 
@@ -111,13 +111,14 @@ def read_msg_info(msg):
     """Reads/decodes the message info needed for attaskcreator and returns it
     as a dict."""
     # get message text and strip out html
-    body = html2text(get_msg_text(msg))
+    body_soup = bs4.BeautifulSoup(get_msg_text(msg), "html.parser")
+    body_text = body_soup.get_text().replace('\r', '')
     return {
         'from': msg['from'],
         'to': msg['to'],
         'subject': msg['subject'],
         'date': msg['date'],
-        'body': body,
+        'body': body_text,
     }
 
 

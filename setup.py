@@ -37,6 +37,8 @@ setup(
         'slackclient',
         'slackperson',
         'slackmentions',
+        'bs4',
+        'arrow',
         ],
 
     entry_points={

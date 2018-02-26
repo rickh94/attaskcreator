@@ -148,6 +148,7 @@ class MyDatabaseTest(unittest.TestCase):
                                            'test text field': 'my test text',
                                            'test person field':
                                            ['rec123456789'],
+                                           'Before leaving work': True,
                                        })
         # tests with some fields
         self.assertIsNone(
@@ -161,6 +162,7 @@ class MyDatabaseTest(unittest.TestCase):
         mock_create.assert_called_with('test table2',
                                        {
                                            'test text field': 'my test text',
+                                           'Before leaving work': True,
                                            'test person field':
                                            ['rec123456789'],
                                            'test attachments field':
@@ -180,6 +182,7 @@ class MyDatabaseTest(unittest.TestCase):
                                            'test text field': 'my test text',
                                            'test person field':
                                            ['rec123456789'],
+                                           'Before leaving work': True,
                                            'test notes field':
                                            'these are some notes',
                                        })
@@ -191,6 +194,8 @@ class MyDatabaseTest(unittest.TestCase):
                 ('test person field', ['rec123456789']),
                 ('test notes field', 'this is the full\n body of the email'),
                 ('test attachments field', ['rec0009987']),
+                sender_filter=[('testperson', 'test1'), ('noone', 'test2')],
+                sender_info='testperson@wherever.com'
                 )
             )
         mock_create.assert_called_with('test table3',
@@ -198,12 +203,38 @@ class MyDatabaseTest(unittest.TestCase):
                                            'test text field': 'my test text',
                                            'test person field':
                                            ['rec123456789'],
+                                           'Before leaving work': True,
                                            'test notes field':
                                            'this is the full\n body of the'
                                            + ' email',
                                            'test attachments field':
                                            ['rec0009987'],
-
+                                           'Type': ['test1'],
+                                       })
+        # test with all fields
+        self.assertIsNone(
+            self.base.create_task_record(
+                'test table3',
+                ('test text field', 'my test text'),
+                ('test person field', ['rec123456789']),
+                ('test notes field', 'this is the full\n body of the email'),
+                ('test attachments field', ['rec0009987']),
+                sender_filter=[('testperson', 'test1'), ('noone', 'test2')],
+                sender_info='noone@example.com'
+                )
+            )
+        mock_create.assert_called_with('test table3',
+                                       {
+                                           'test text field': 'my test text',
+                                           'test person field':
+                                           ['rec123456789'],
+                                           'Before leaving work': True,
+                                           'test notes field':
+                                           'this is the full\n body of the'
+                                           + ' email',
+                                           'test attachments field':
+                                           ['rec0009987'],
+                                           'Type': ['test2'],
                                        })
         # links not lists
         self.assertIsNone(
@@ -220,6 +251,7 @@ class MyDatabaseTest(unittest.TestCase):
                                            'my second test text',
                                            'test person field':
                                            ['rec123456789'],
+                                           'Before leaving work': True,
                                            'test attachments field':
                                            ['rec0009987'],
                                        })
@@ -238,6 +270,7 @@ class MyDatabaseTest(unittest.TestCase):
                                            'test text field': 'my test text',
                                            'test person field':
                                            ['rec123456789', 'rec012345678'],
+                                           'Before leaving work': True,
                                            'test notes field':
                                            'this is the full\n body of the'
                                            + ' email',
