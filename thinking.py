@@ -18,10 +18,11 @@ slackin = Slack(app)
 app.config['SLACK_VER_TOKEN'] = os.environ['SLACK_VER_TOKEN']
 app.config['TEAM_ID'] = os.environ['TEAM_ID']
 slackout = SlackClient(os.environ['SLACK_API_TOKEN'])
+app.config['CONFIG_PATH'] = os.environ['ATTASK_CONFIG_PATH']
 
 
 def setup():
-    settings = config.Settings(path_prefix='/etc/attaskcreator')
+    settings = config.Settings(path_prefix=app.config['CONFIG_PATH'])
     settings.setup_log()
     settings.setup_db()
     settings.setup_phrases()
