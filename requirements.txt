@@ -15,7 +15,7 @@ html2text==2016.9.19
 idna==2.5
 itsdangerous==0.24
 jedi==0.10.2
-Jinja2==2.9.6
+Jinja2==2.11.3
 jmespath==0.9.3
 MarkupSafe==1.0
 nameparser==0.5.3
