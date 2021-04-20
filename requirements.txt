@@ -21,7 +21,7 @@ MarkupSafe==1.0
 nameparser==0.5.3
 prompt-toolkit==1.0.15
 ptpython==0.41
-py==1.4.34
+py==1.10.0
 Pygments==2.2.0
 pytest==3.2.1
 pytest-cov==2.5.1
